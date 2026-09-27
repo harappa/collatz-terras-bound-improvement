@@ -1,0 +1,24 @@
+collatz-terras-bound-improvement
+Copyright 2026 Hiroyuki Nashida
+
+Lean 4 formalization accompanying the preprint "A strict improvement of the Terras-type bound
+for integers with long Collatz stopping times" by Hiroyuki Nashida (Zenodo, 2026,
+doi:10.5281/zenodo.22986641). Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party components
+
+This repository does not include any third-party file, and no file in it is derived from
+third-party code. The following works are fetched at build time; they are not redistributed
+here, and their own LICENSE and NOTICE files apply.
+
+1. Mathlib, https://github.com/leanprover-community/mathlib4, tag v4.30.0-rc2, and the Lean
+   packages it requires (pinned in lake-manifest.json). Mathlib is licensed under the Apache
+   License 2.0; the other packages are under their own licenses. Fetched by Lake.
+
+2. L. Mazur, "Natural-density Collatz descent in logarithmic time", Lean formalization hosted
+   by ProofAtlas (project natural-density-log-time-collatz),
+   commit ca3dd0d63920411213403092aecc6946619eb082.
+   Copyright 2026 Advameg, Inc. Apache License 2.0.
+   Fetched by fetch_mazur.py into vendor/mazur, together with its own LICENSE and NOTICE.
+   CollatzND/Rhin.lean imports its theorem Erdos1135.ND.existsPhaseGapRhin and uses it
+   unchanged.

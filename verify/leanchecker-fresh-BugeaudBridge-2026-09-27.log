@@ -1,0 +1,8 @@
+# lake env leanchecker --fresh CollatzProof.M1.BugeaudBridge   (Lean v4.30.0-rc2, project lean-nd; source repository)
+# BugeaudBridge.lean states Bugeaud (2002), Theorem 2, for general m and mu (Collatz.M1.Bugeaud.Thm2) and proves
+# bugeaudHyp_of_thm2 : Thm2 8 4 -> BugeaudHyp. leanchecker --fresh re-verifies every declaration of the dependency
+# closure, including Mathlib; it prints nothing on success.
+Collatz.M1.Bugeaud.bugeaudHyp_of_thm2 : Collatz.M1.Bugeaud.Thm2 8 4 → Collatz.M1.BugeaudHyp
+'Collatz.M1.Bugeaud.bugeaudHyp_of_thm2' depends on axioms: [propext, Classical.choice, Quot.sound]
+start 2026-09-27T03:58:39+09:00   source commit 380d4e2
+exit=0 end 2026-09-27T04:30:56+09:00

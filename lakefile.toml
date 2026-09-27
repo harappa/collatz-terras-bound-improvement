@@ -1,0 +1,36 @@
+name = "CollatzND"
+defaultTargets = ["CollatzProof", "CollatzND"]
+
+# Mathlib is pinned to the version used by Mazur's formalization (Lean v4.30.0-rc2).
+# The package name matches lake-manifest.json (copied unchanged from the source repository).
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.30.0-rc2"
+
+# L. Mazur, "Natural-density Collatz descent in logarithmic time" (ProofAtlas, commit ca3dd0d, Apache-2.0).
+# Not redistributed here: fetch_mazur.py downloads it, checks SHA-256 hashes, and unpacks it into vendor/mazur.
+# Only the import closure of Erdos1135.ND.RhinPhaseGap is built (it is used by CollatzND.Rhin).
+[[lean_lib]]
+name = "Erdos1135"
+srcDir = "vendor/mazur"
+globs = ["Erdos1135.+"]
+
+[[lean_lib]]
+name = "FormalConjectures"
+srcDir = "vendor/mazur"
+globs = ["FormalConjectures.+"]
+
+# The M1 formalization of this project: basic definitions (the shortcut map T, the dual Terras identity),
+# the minimal-endpoint fibers, and the proof of M1 (CollatzProof.M1.*, main theorem Collatz.M1.m1_main;
+# stopping-time version Collatz.M1.sigma_main and Collatz.M1.divergent_count under the hypothesis RhinHyp).
+[[lean_lib]]
+name = "CollatzProof"
+srcDir = "."
+globs = ["CollatzProof.Core.Defs", "CollatzProof.Defs", "CollatzProof.Fiber", "CollatzProof.M1.+"]
+
+# Discharging RhinHyp with Mazur's Rhin-type phase gap: CollatzND.m1_sigma and CollatzND.m1_divergent
+# assume only Bugeaud (2002), Theorem 2 (the hypothesis Collatz.M1.BugeaudHyp).
+[[lean_lib]]
+name = "CollatzND"
+globs = ["CollatzND.Rhin", "CollatzND.M1Sigma"]

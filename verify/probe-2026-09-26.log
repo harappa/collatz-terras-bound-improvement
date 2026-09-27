@@ -1,0 +1,88 @@
+# 2026-09-26T14:43:27+09:00 lake env lean verify/Probe.lean
+Collatz.M1.m1_main (hBug : Collatz.M1.BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+  ∃ ε > 0, ∃ K0, ∀ K ≥ K0, ↑(Collatz.M1.NKcount K ⌊2 ^ (α * ↑K)⌋₊) ≤ 2 ^ ((α * (1 - Collatz.M1.cc) - ε) * ↑K)
+Collatz.M1.sigma_main (hBug : Collatz.M1.BugeaudHyp) (hR : Collatz.M1.RhinHyp) (α : ℝ) (hα : 1 / 2 < α)
+  (hα' : α ≤ 0.659) :
+  ∃ ε > 0, ∃ K0, ∀ K ≥ K0, ↑(Collatz.M1.SigmaCount K ⌊2 ^ (α * ↑K)⌋₊) ≤ 2 ^ ((α * (1 - Collatz.M1.cc) - ε) * ↑K)
+Collatz.M1.divergent_count (hBug : Collatz.M1.BugeaudHyp) (hR : Collatz.M1.RhinHyp) :
+  ∃ ε > 0, ∃ x0, ∀ x ≥ x0, ↑(Collatz.M1.DivCount x) ≤ ↑x ^ (1 - Collatz.M1.cc - ε)
+CollatzND.m1_sigma (hBug : Collatz.M1.BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+  ∃ ε > 0, ∃ K0, ∀ K ≥ K0, ↑(Collatz.M1.SigmaCount K ⌊2 ^ (α * ↑K)⌋₊) ≤ 2 ^ ((α * (1 - Collatz.M1.cc) - ε) * ↑K)
+CollatzND.m1_divergent (hBug : Collatz.M1.BugeaudHyp) :
+  ∃ ε > 0, ∃ x0, ∀ x ≥ x0, ↑(Collatz.M1.DivCount x) ≤ ↑x ^ (1 - Collatz.M1.cc - ε)
+CollatzND.rhinHyp_holds : Collatz.M1.RhinHyp
+'Collatz.M1.m1_main' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Collatz.M1.sigma_main' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Collatz.M1.divergent_count' depends on axioms: [propext, Classical.choice, Quot.sound]
+'CollatzND.rhinHyp_holds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'CollatzND.m1_sigma' depends on axioms: [propext, Classical.choice, Quot.sound]
+'CollatzND.m1_divergent' depends on axioms: [propext, Classical.choice, Quot.sound]
+def Collatz.M1.BugeaudHyp : Prop :=
+∀ (r₁ r₂ : ℚ) (g b₁ b₂ : ℕ) (A₁ A₂ : ℝ),
+  r₁ ≠ 0 →
+    r₂ ≠ 0 →
+      r₁ ≠ 1 →
+        r₁ ≠ -1 →
+          Collatz.M1.v2q r₁ = 0 →
+            Collatz.M1.v2q r₂ = 0 →
+              1 ≤ g →
+                g % 2 = 1 →
+                  3 ≤ Collatz.M1.v2q (r₁ ^ g - 1) →
+                    2 ≤ Collatz.M1.v2q (r₂ ^ g - 1) →
+                      1 ≤ b₁ →
+                        1 ≤ b₂ →
+                          b₂ % 2 = 1 →
+                            Collatz.M1.MulIndep r₁ r₂ →
+                              1 < A₁ →
+                                1 < A₂ →
+                                  Real.log |↑r₁.num| ≤ Real.log A₁ →
+                                    Real.log ↑r₁.den ≤ Real.log A₁ →
+                                      Real.log 8 ≤ Real.log A₁ →
+                                        Real.log |↑r₂.num| ≤ Real.log A₂ →
+                                          Real.log ↑r₂.den ≤ Real.log A₂ →
+                                            Real.log 8 ≤ Real.log A₂ →
+                                              ↑(Collatz.M1.v8 (r₁ ^ b₁ - r₂ ^ b₂)) ≤
+                                                53.6 * ↑g / Real.log 8 ^ 4 *
+                                                      max
+                                                          (Real.log (↑b₁ / Real.log A₂ + ↑b₂ / Real.log A₁) +
+                                                              Real.log (Real.log 8) +
+                                                            0.64)
+                                                          (4 * Real.log 8) ^
+                                                        2 *
+                                                    Real.log A₁ *
+                                                  Real.log A₂
+def Collatz.M1.v8 : ℚ → ℤ :=
+fun x => ↑(padicValInt 2 x.num / 3) - ↑(padicValNat 2 x.den / 3)
+def Collatz.M1.v2q : ℚ → ℤ :=
+fun x => padicValRat 2 x
+def Collatz.M1.MulIndep : ℚ → ℚ → Prop :=
+fun r₁ r₂ => ∀ (k₁ k₂ : ℤ), r₁ ^ k₁ * r₂ ^ k₂ = 1 → k₁ = 0 ∧ k₂ = 0
+def Collatz.M1.RhinHyp : Prop :=
+∃ C κ, 0 < C ∧ ∀ (q : ℕ), 0 < q → C * ↑q ^ (-κ) ≤ |↑q * Collatz.M1.lam - ↑(round (↑q * Collatz.M1.lam))|
+def Collatz.T : ℕ → ℕ :=
+fun n => if n % 2 = 0 then n / 2 else (3 * n + 1) / 2
+def Collatz.M1.pw : ℕ → (len : ℕ) → Fin len → Bool :=
+fun n len i => decide (Collatz.T^[↑i] n % 2 = 1)
+def Collatz.M1.ones : {n : ℕ} → (Fin n → Bool) → ℕ → ℕ :=
+fun {n} x j => {i | ↑i < j ∧ x i = true}.card
+def Collatz.M1.lam : ℝ :=
+Real.logb 2 3
+def Collatz.M1.hw : {n : ℕ} → ℝ → (Fin n → Bool) → ℕ → ℝ :=
+fun {n} y x j => y + Collatz.M1.lam * ↑(Collatz.M1.ones x j) - ↑j
+def Collatz.M1.SurvW : {n : ℕ} → ℝ → (Fin n → Bool) → Prop :=
+fun {n} y x => ∀ (j : ℕ), 1 ≤ j → j ≤ n → 0 ≤ Collatz.M1.hw y x j
+def Collatz.M1.NKcount : ℕ → ℕ → ℕ :=
+fun K X => {n ∈ Finset.Icc 1 X | Collatz.M1.SurvW 0 (Collatz.M1.pw n K)}.card
+def Collatz.M1.Hb : ℝ → ℝ :=
+fun ρ => -(ρ * Real.logb 2 ρ) - (1 - ρ) * Real.logb 2 (1 - ρ)
+def Collatz.M1.rhoc : ℝ :=
+1 / Collatz.M1.lam
+def Collatz.M1.cc : ℝ :=
+1 - Collatz.M1.Hb Collatz.M1.rhoc
+def Collatz.M1.SigmaGt : ℕ → ℕ → Prop :=
+fun n K => ∀ (j : ℕ), 1 ≤ j → j ≤ K → n ≤ Collatz.T^[j] n
+def Collatz.M1.SigmaCount : ℕ → ℕ → ℕ :=
+fun K X => {n ∈ Finset.Icc 1 X | Collatz.M1.SigmaGt n K}.card
+def Collatz.M1.DivCount : ℕ → ℕ :=
+fun X => {n ∈ Finset.Icc 1 X | ∀ (K : ℕ), Collatz.M1.SigmaGt n K}.card
+exit=0
