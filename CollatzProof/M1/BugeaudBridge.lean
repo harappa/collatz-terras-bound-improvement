@@ -2,7 +2,7 @@ import CollatzProof.M1.DeepDefs
 import CollatzProof.M1.Compat
 
 /-!
-# Theorem 2 of Bugeaud (2002) for general `m` and the hypothesis `BugeaudHyp` (Proposition B.1 of the paper; suggested in a review of the manuscript)
+# Theorem 2 of Bugeaud (2002) for general `m` and the hypothesis `BugeaudHyp` (Proposition B.2 of the paper; suggested in a review of the manuscript)
 
 Y. Bugeaud, *Linear forms in two m-adic logarithms and applications to Diophantine problems*,
 Compositio Math. **132** (2002), 137–158, §2 (pp. 138–140, checked against the typeset pages of the original paper). We state

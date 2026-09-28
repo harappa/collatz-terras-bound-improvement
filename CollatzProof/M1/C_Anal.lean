@@ -80,16 +80,22 @@ lemma C_polyQ (ρ δ : ℝ) (h1 : 0.6309 < ρ) (h2 : ρ < 0.631) (hδ : 0 < δ) 
   linarith
 
 set_option maxHeartbeats 1000000 in
-/-- The gain of `S₃`: if `h_p ≥ 1.23δq` and `P ≤ q`, then `(1 + ρ_c ε)^P / (1+ε)^{L_p} ≤ 2^{−1.708δ²q}` (`ε = 10δ/3`). -/
-lemma C_S3_gain (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (P Lq q : ℕ) (hPq : (P : ℝ) ≤ q)
-    (hhp : 1.23 * δ * q ≤ lam * Lq - P) :
-    (1 + rhoc * ((1 + 10 / 3 * δ) - 1)) ^ P / (1 + 10 / 3 * δ) ^ Lq ≤
-      (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by
+/-- General form of the gain of `S₃`: slope `z = 1 + κδ` (`0 < κδ ≤ 1/300`). From the polynomial estimate `hQ` at `ρ = ρ_c`
+(the expansion in `δ` of `(l₂ − ρl₁) − ρaδl₁`, where `l₁`, `l₂` are the second-order bounds for `log(1+ε)`, `log(1+ρε)`) and `g · 0.6931471808 ≤ G`:
+if `h_p ≥ aδq` and `P ≤ q`, then `(1 + ρ_c κδ)^P / (1+κδ)^{L_p} ≤ 2^{−gδ²q}`.
+Version 2 of the proof manuscript (revision r6 of the paper) uses `(a, κ, G, g) = (1.23, 10/3, 1.184, 1.708)`, version 3 (revision r7) uses `(1.38, 15/4, 1.52, 2.18)` (`ThmAV3.lean`). -/
+lemma C_S3_gainG (a κ G g δ : ℝ) (hδ : 0 < δ) (hκ : 0 < κ) (hε1 : κ * δ ≤ 1 / 300) (hg0 : 0 ≤ g)
+    (hgG : g * 0.6931471808 ≤ G)
+    (hQ : δ ^ 2 * (rhoc * (κ ^ 2 / 2 * (1 - rhoc) - a * κ)) +
+      δ ^ 3 * (rhoc * (2 * κ ^ 3 * (rhoc ^ 2 + 1) + a * κ ^ 2 / 2)) +
+        δ ^ 4 * (rhoc * (2 * a * κ ^ 3)) ≤ -G * δ ^ 2)
+    (P Lq q : ℕ) (hPq : (P : ℝ) ≤ q) (hhp : a * δ * q ≤ lam * Lq - P) :
+    (1 + rhoc * ((1 + κ * δ) - 1)) ^ P / (1 + κ * δ) ^ Lq ≤
+      (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by
   obtain ⟨hρ1, hρ2⟩ := rhoc_bounds
   set ρ := rhoc with hρ
-  set ε := 10 / 3 * δ with hε
+  set ε := κ * δ with hε
   have hε0 : 0 < ε := by positivity
-  have hε1 : ε ≤ 1 / 300 := by rw [hε]; linarith
   have e1 : 1 + ρ * ((1 + ε) - 1) = 1 + ρ * ε := by ring
   rw [e1]
   have hpos1 : 0 < 1 + ρ * ε := by positivity
@@ -122,30 +128,51 @@ lemma C_S3_gain (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (P Lq q : ℕ) (h
       apply mul_le_mul_of_nonneg_left hl2 (by positivity)
     have h2 : (Lq : ℝ) * l1 ≤ Lq * Real.log (1 + ε) := mul_le_mul_of_nonneg_left hl1 hLq0
     linarith
-  have step2 : (P : ℝ) * l2 - Lq * l1 ≤ q * (l2 - ρ * l1) - ρ * (1.23 * δ * q) * l1 := by
+  have step2 : (P : ℝ) * l2 - Lq * l1 ≤ q * (l2 - ρ * l1) - ρ * (a * δ * q) * l1 := by
     rw [hLq]
     have h1 : (P : ℝ) * (l2 - ρ * l1) ≤ q * (l2 - ρ * l1) := mul_le_mul_of_nonneg_right hPq hdiff
-    have h2 : ρ * (1.23 * δ * q) * l1 ≤ ρ * (lam * Lq - P) * l1 := by
+    have h2 : ρ * (a * δ * q) * l1 ≤ ρ * (lam * Lq - P) * l1 := by
       apply mul_le_mul_of_nonneg_right _ hl1pos
       apply mul_le_mul_of_nonneg_left hhp (by positivity)
     nlinarith
   -- the polynomial estimate
-  have hQ : (l2 - ρ * l1) - ρ * (1.23 * δ) * l1 ≤ -1.184 * δ ^ 2 := by
-    have eQ : (l2 - ρ * l1) - ρ * (1.23 * δ) * l1 =
-        δ ^ 2 * (ρ * (50 / 9 * (1 - ρ) - 4.1)) +
-          δ ^ 3 * (ρ * (2000 / 27 * (ρ ^ 2 + 1) + 61.5 / 9)) +
-            δ ^ 4 * (ρ * (2.46 * 1000 / 27)) := by
+  have hQ' : (l2 - ρ * l1) - ρ * (a * δ) * l1 ≤ -G * δ ^ 2 := by
+    have eQ : (l2 - ρ * l1) - ρ * (a * δ) * l1 =
+        δ ^ 2 * (ρ * (κ ^ 2 / 2 * (1 - ρ) - a * κ)) +
+          δ ^ 3 * (ρ * (2 * κ ^ 3 * (ρ ^ 2 + 1) + a * κ ^ 2 / 2)) +
+            δ ^ 4 * (ρ * (2 * a * κ ^ 3)) := by
       rw [hl1def, hl2def, hε]; ring
     rw [eQ]
-    exact C_polyQ ρ δ hρ1 hρ2 hδ hδ1
+    exact hQ
   have hlog2 := Real.log_two_lt_d9
-  have hq2 : q * ((l2 - ρ * l1) - ρ * (1.23 * δ) * l1) ≤ q * (-1.184 * δ ^ 2) :=
-    mul_le_mul_of_nonneg_left hQ hq0
-  have hfin : (q : ℝ) * (-1.184 * δ ^ 2) ≤ -(1.708 * δ ^ 2 * q) * Real.log 2 := by
-    have : 0 ≤ (q : ℝ) * δ ^ 2 := by positivity
+  have hq2 : q * ((l2 - ρ * l1) - ρ * (a * δ) * l1) ≤ q * (-G * δ ^ 2) :=
+    mul_le_mul_of_nonneg_left hQ' hq0
+  have hfin : (q : ℝ) * (-G * δ ^ 2) ≤ -(g * δ ^ 2 * q) * Real.log 2 := by
+    have h0 : 0 ≤ (q : ℝ) * δ ^ 2 := by positivity
+    have h1 : g * Real.log 2 ≤ G := by nlinarith
+    have e : -(g * δ ^ 2 * q) * Real.log 2 = -((g * Real.log 2) * ((q : ℝ) * δ ^ 2)) := by ring
+    rw [e]
     nlinarith
-  have e3 : q * (l2 - ρ * l1) - ρ * (1.23 * δ * q) * l1 =
-      q * ((l2 - ρ * l1) - ρ * (1.23 * δ) * l1) := by ring
+  have e3 : q * (l2 - ρ * l1) - ρ * (a * δ * q) * l1 =
+      q * ((l2 - ρ * l1) - ρ * (a * δ) * l1) := by ring
   linarith [step1, step2, e3, hq2, hfin]
+
+set_option maxHeartbeats 1000000 in
+/-- The gain of `S₃`: if `h_p ≥ 1.23δq` and `P ≤ q`, then `(1 + ρ_c ε)^P / (1+ε)^{L_p} ≤ 2^{−1.708δ²q}` (`ε = 10δ/3`). -/
+lemma C_S3_gain (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (P Lq q : ℕ) (hPq : (P : ℝ) ≤ q)
+    (hhp : 1.23 * δ * q ≤ lam * Lq - P) :
+    (1 + rhoc * ((1 + 10 / 3 * δ) - 1)) ^ P / (1 + 10 / 3 * δ) ^ Lq ≤
+      (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by
+  obtain ⟨hρ1, hρ2⟩ := rhoc_bounds
+  have hQ := C_polyQ rhoc δ hρ1 hρ2 hδ hδ1
+  refine C_S3_gainG 1.23 (10 / 3) 1.184 1.708 δ hδ (by norm_num) (by linarith) (by norm_num)
+    (by norm_num) ?_ P Lq q hPq hhp
+  have e : δ ^ 2 * (rhoc * ((10 / 3 : ℝ) ^ 2 / 2 * (1 - rhoc) - 1.23 * (10 / 3))) +
+      δ ^ 3 * (rhoc * (2 * (10 / 3 : ℝ) ^ 3 * (rhoc ^ 2 + 1) + 1.23 * (10 / 3) ^ 2 / 2)) +
+        δ ^ 4 * (rhoc * (2 * 1.23 * (10 / 3 : ℝ) ^ 3)) =
+      δ ^ 2 * (rhoc * (50 / 9 * (1 - rhoc) - 4.1)) +
+        δ ^ 3 * (rhoc * (2000 / 27 * (rhoc ^ 2 + 1) + 61.5 / 9)) +
+          δ ^ 4 * (rhoc * (2.46 * 1000 / 27)) := by ring
+  rw [e]; exact hQ
 
 end Collatz.M1

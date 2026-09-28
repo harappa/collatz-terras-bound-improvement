@@ -155,10 +155,11 @@ theorem window_count (q s L P : ℕ) (γ : ℝ) (hγ1 : 1 / 2 ≤ γ) (hγ2 : γ
         exact mul_le_mul_of_nonneg_left hC (by positivity)
     _ = ((N : ℝ) + 1) * N * Theta γ ρ ^ m * (Tset q s L P).card := by ring
 
-/-- Lemma 6.4: if `s > q + 1` and `(L, P) ∈ R_δ` (`δ ≤ 10^{−3}`), then `|ρ̄ − ρ_c| ≤ (1.23δq + a)/(λ(s − q − 1))` and `t ≥ s − q + 1`. -/
-theorem rhoBar_close (δ : ℝ) (s q L P : ℕ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hsq : q + 1 < s)
-    (hR : Rdelta δ s q L P) :
-    |rhoBar q s L P - rhoc| ≤ (1.23 * δ * q + aa) / (lam * (s - q - 1)) ∧ s - q + 1 ≤ s - P := by
+/-- General form of Lemma 6.4: if `s > q + 1` and `(L, P) ∈ RdeltaG a b δ` (`δ ≥ 0`, `bδ ≤ a`), then
+`|ρ̄ − ρ_c| ≤ (aδq + a_λ)/(λ(s − q − 1))` (`a_λ = λ − 1`) and `t ≥ s − q + 1`. Version 3 has `(a, b) = (1.38, 4.48)` (§4.2.3 of version 3 of the manuscript). -/
+theorem rhoBar_closeG (a b δ : ℝ) (s q L P : ℕ) (hδ : 0 ≤ δ) (hba : b * δ ≤ a) (hsq : q + 1 < s)
+    (hR : RdeltaG a b δ s q L P) :
+    |rhoBar q s L P - rhoc| ≤ (a * δ * q + aa) / (lam * (s - q - 1)) ∧ s - q + 1 ≤ s - P := by
   obtain ⟨hL0, hL1, hp0, hp1, _hPne, hTne, hPs⟩ := hR
   have hlam1 := E_lam_gt_one
   have ha := E_aa_pos
@@ -193,19 +194,27 @@ theorem rhoBar_close (δ : ℝ) (s q L P : ℕ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e
     field_simp
     ring
   rw [hid, abs_div, abs_of_pos (mul_pos hlpos hsP)]
-  have hnum : |hL s L - hp q P - aa| ≤ 1.23 * δ * q + aa := by
+  have hnum : |hL s L - hp q P - aa| ≤ a * δ * q + aa := by
     have hq0 : (0:ℝ) ≤ q := Nat.cast_nonneg q
-    have h35 : 3.5 * δ ^ 2 * q ≤ 1.23 * δ * q := by
-      nlinarith [mul_nonneg (mul_nonneg hδ.le (by linarith : (0:ℝ) ≤ 1.23 - 3.5 * δ)) hq0]
+    have h35 : b * δ ^ 2 * q ≤ a * δ * q := by
+      have e : b * δ ^ 2 * q = (b * δ) * (δ * q) := by ring
+      have e2 : a * δ * q = a * (δ * q) := by ring
+      rw [e, e2]; exact mul_le_mul_of_nonneg_right hba (mul_nonneg hδ hq0)
     rw [abs_le]; constructor <;> linarith
-  have hnum0 : 0 ≤ 1.23 * δ * q + aa := by positivity
+  have hnum0 : 0 ≤ a * δ * q + aa := by linarith
   calc |hL s L - hp q P - aa| / (lam * ((s:ℝ) - P - 1))
-      ≤ (1.23 * δ * q + aa) / (lam * ((s:ℝ) - P - 1)) := by
+      ≤ (a * δ * q + aa) / (lam * ((s:ℝ) - P - 1)) := by
         gcongr
-    _ ≤ (1.23 * δ * q + aa) / (lam * ((s:ℝ) - q - 1)) := by
+    _ ≤ (a * δ * q + aa) / (lam * ((s:ℝ) - q - 1)) := by
         apply div_le_div_of_nonneg_left hnum0 (mul_pos hlpos hsq')
         apply mul_le_mul_of_nonneg_left _ hlpos.le
         linarith
+
+/-- Lemma 6.4: if `s > q + 1` and `(L, P) ∈ R_δ` (`δ ≤ 10^{−3}`), then `|ρ̄ − ρ_c| ≤ (1.23δq + a)/(λ(s − q − 1))` and `t ≥ s − q + 1`. -/
+theorem rhoBar_close (δ : ℝ) (s q L P : ℕ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hsq : q + 1 < s)
+    (hR : Rdelta δ s q L P) :
+    |rhoBar q s L P - rhoc| ≤ (1.23 * δ * q + aa) / (lam * (s - q - 1)) ∧ s - q + 1 ≤ s - P :=
+  rhoBar_closeG 1.23 3.5 δ s q L P hδ.le (by linarith) hsq hR
 
 -- The hypotheses `hε`, `h1` are not needed in the proof (the statement is kept as in the skeleton).
 set_option linter.unusedVariables false in

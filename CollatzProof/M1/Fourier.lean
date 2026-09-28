@@ -37,9 +37,12 @@ noncomputable def LamLP (q s L P : ℕ) : ℝ :=
       ‖Ehat q (Eset q (hL s L)) ξ‖ ^ 2 * ‖Ghat q s L P ξ‖ ^ 2) /
     (((Eset q (hL s L)).card : ℝ) ^ 2 * ((Tset q s L P).card : ℝ) ^ 2)
 
-/-- Condition (WF)(δ) (Definition 3.4): `Λ_{L,P} ≤ 2^{(c−2δ)q}` for every slice in `R_δ`. -/
-def WF (δ : ℝ) (s q : ℕ) : Prop :=
-  ∀ L P : ℕ, Rdelta δ s q L P → LamLP q s L P ≤ (2:ℝ) ^ ((cc - 2 * δ) * q)
+/-- Condition (WF)(δ) with the constants of `R_δ` as parameters: `Λ_{L,P} ≤ 2^{(c−2δ)q}` for every slice in `RdeltaG a b δ`. -/
+def WFG (a b δ : ℝ) (s q : ℕ) : Prop :=
+  ∀ L P : ℕ, RdeltaG a b δ s q L P → LamLP q s L P ≤ (2:ℝ) ^ ((cc - 2 * δ) * q)
+
+/-- Condition (WF)(δ) (Definition 3.4): `Λ_{L,P} ≤ 2^{(c−2δ)q}` for every slice in `R_δ` (`WFG` with `(a, b) = (1.23, 3.5)`). -/
+def WF (δ : ℝ) (s q : ℕ) : Prop := WFG 1.23 3.5 δ s q
 
 /-- `s = ⌊αK⌋ + 1` (Corollary A, §14.1). -/
 noncomputable def sOf (α : ℝ) (K : ℕ) : ℕ := ⌊α * K⌋₊ + 1

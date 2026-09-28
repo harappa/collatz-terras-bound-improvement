@@ -11,6 +11,7 @@ The components of the proof are in auxiliary files (prefix `D_`).
 - `D_CRT`: indexing by the Chinese remainder theorem (§5.1) and the expansion of `Ĝ`.
 - `D_Main`: Lemma 5.5 (reduction) and `Λ_{L,P} ≤ 4(L+1)² 2^q B/|E|`.
 Instead of `Γ_L = 3 + L ln 3` of the manuscript we use `Σ_η |ω_ξ(η)| ≤ 2(L+1)` (a factor polynomial in `q`, so the same in the qualitative form).
+The general form `thmBG` (`RdeltaG a b δ`, `WFG a b δ`, `aδ ≤ 1.23×10^{−3}`, `bδ² ≤ 3.5×10^{−6}`) is stated, and `thmB` of version 2 is its special case (for version 3 of the proof manuscript).
 -/
 
 namespace Collatz.M1
@@ -39,15 +40,14 @@ lemma D_q_lt_lam (q : ℕ) : (q : ℝ) < lam * (Lp q + 1) := by
     exact_mod_cast h
   exact (Real.rpow_lt_rpow_left_iff (by norm_num)).mp h'
 
-/-- Lemma 3.3 (iii): if `δ ≤ 10^{−3}`, `s ≤ 1.94q`, `q ≥ 67`, `h_p ≤ 1.23δq`, then `2^t < 3^{L_p}`. -/
-lemma D_two_pow_lt {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) {q s P : ℕ} (hq : 67 ≤ q)
-    (hs : (s : ℝ) ≤ 1.94 * q) (hp1 : hp q P ≤ 1.23 * δ * q) (hPs : P < s) :
-    2 ^ (s - P) < 3 ^ Lp q := by
+/-- General form of Lemma 3.3 (iii): if `s ≤ 1.94q`, `q ≥ 67` and `h_p ≤ 1.23×10^{−3}q`, then `2^t < 3^{L_p}`
+(version 2 obtains the last condition from `h_p ≤ 1.23δq`, `δ ≤ 10^{−3}`, version 3 from `h_p ≤ 1.38δq`, `δ ≤ 10^{−4}`). -/
+lemma D_two_pow_lt' {q s P : ℕ} (hq : 67 ≤ q) (hs : (s : ℝ) ≤ 1.94 * q) (hp1 : hp q P ≤ 1.23e-3 * q)
+    (hPs : P < s) : 2 ^ (s - P) < 3 ^ Lp q := by
   have hlam := lam_bounds
   have hqlam := D_q_lt_lam q
   unfold hp at hp1
   have hq' : (67 : ℝ) ≤ q := by exact_mod_cast hq
-  have hδq : δ * q ≤ 1e-3 * q := mul_le_mul_of_nonneg_right hδ1 (by positivity)
   have hts : ((s - P : ℕ) : ℝ) = s - P := by rw [Nat.cast_sub hPs.le]
   have key : ((s - P : ℕ) : ℝ) < lam * Lp q := by
     rw [hts]; nlinarith
@@ -57,16 +57,30 @@ lemma D_two_pow_lt {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) {q s P : ℕ} 
     Real.rpow_logb (by norm_num) (by norm_num) (by norm_num), Real.rpow_natCast] at h'
   exact_mod_cast h'
 
-/-- On the slices of `R_δ`, `L + 1 ≤ 2q`. -/
-lemma D_L_bound {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) {q s L : ℕ} (hq : 2 ≤ q)
-    (hs : (s : ℝ) ≤ 1.94 * q) (hL1 : hL s L ≤ 3.5 * δ ^ 2 * q) : (L : ℝ) + 1 ≤ 2 * q := by
+-- The hypothesis `hδ` is not needed once the proof goes through the general form `D_two_pow_lt'` (the statement of the skeleton is kept).
+set_option linter.unusedVariables false in
+/-- Lemma 3.3 (iii): if `δ ≤ 10^{−3}`, `s ≤ 1.94q`, `q ≥ 67`, `h_p ≤ 1.23δq`, then `2^t < 3^{L_p}`. -/
+lemma D_two_pow_lt {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) {q s P : ℕ} (hq : 67 ≤ q)
+    (hs : (s : ℝ) ≤ 1.94 * q) (hp1 : hp q P ≤ 1.23 * δ * q) (hPs : P < s) :
+    2 ^ (s - P) < 3 ^ Lp q := by
+  have hδq : 1.23 * δ * q ≤ 1.23e-3 * q := by
+    apply mul_le_mul_of_nonneg_right _ (by positivity); linarith
+  exact D_two_pow_lt' hq hs (hp1.trans hδq) hPs
+
+/-- On the slices of `R_δ`, `L + 1 ≤ 2q` (general form: from `h_L ≤ 3.5×10^{−6}q`). -/
+lemma D_L_bound' {q s L : ℕ} (hq : 2 ≤ q) (hs : (s : ℝ) ≤ 1.94 * q) (hL1 : hL s L ≤ 3.5e-6 * q) :
+    (L : ℝ) + 1 ≤ 2 * q := by
   have hlam := lam_bounds
   unfold hL at hL1
   have hq' : (2 : ℝ) ≤ q := by exact_mod_cast hq
-  have hδ2 : δ ^ 2 ≤ 1e-6 := by nlinarith
-  have hδq : δ ^ 2 * q ≤ 1e-6 * q := mul_le_mul_of_nonneg_right hδ2 (by positivity)
   have hLl : 1.5849 * (L : ℝ) ≤ lam * L := mul_le_mul_of_nonneg_right hlam.1.le (by positivity)
   nlinarith
+
+/-- On the slices of `R_δ`, `L + 1 ≤ 2q`. -/
+lemma D_L_bound {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) {q s L : ℕ} (hq : 2 ≤ q)
+    (hs : (s : ℝ) ≤ 1.94 * q) (hL1 : hL s L ≤ 3.5 * δ ^ 2 * q) : (L : ℝ) + 1 ≤ 2 * q := by
+  have hδ2 : 3.5 * δ ^ 2 ≤ 3.5e-6 := by nlinarith
+  exact D_L_bound' hq hs (hL1.trans (mul_le_mul_of_nonneg_right hδ2 (by positivity)))
 
 /-- `C q^4 ≤ 2^{εq}` (for sufficiently large `q`). -/
 lemma D_asymp (ε : ℝ) (hε : 0 < ε) :
@@ -125,11 +139,13 @@ lemma D_final_real (q : ℕ) (hq : 1 ≤ q) (c δ δ' Lr Er Λ : ℝ)
     _ ≤ (2 : ℝ) ^ ((δ' - 2 * δ) * q) * (2 : ℝ) ^ ((c - δ') * q) := by gcongr
     _ = _ := e2
 
-/-- Theorem B: let `1 < s/q ≤ 1.94`, `0 < δ ≤ 10^{−3}`, `δ' > 2δ`. If `q` is sufficiently large (depending on `δ, δ'`) and
-`A_k ≤ 2^{−δ'q}` for every slice of `R_δ` and every shell `0 ≤ k ≤ L`, then (WF)(δ). -/
-theorem thmB (δ δ' : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ' : 2 * δ < δ') :
+/-- General form of Theorem B (`RdeltaG a b δ`): let `1 < s/q ≤ 1.94`, `aδ ≤ 1.23×10^{−3}`, `bδ² ≤ 3.5×10^{−6}` and `δ' > 2δ`.
+If `q` is sufficiently large and `A_k ≤ 2^{−δ'q}` for every slice of `RdeltaG a b δ` and every shell `0 ≤ k ≤ L`, then `WFG a b δ`.
+Version 2 has `(a, b) = (1.23, 3.5)`, `δ ≤ 10^{−3}` (`thmB`), version 3 has `(a, b) = (1.38, 4.48)`, `δ ≤ 10^{−4}` (§4.2.3 of version 3 of the manuscript). -/
+theorem thmBG (a b δ δ' : ℝ) (haδ : a * δ ≤ 1.23e-3) (hbδ : b * δ ^ 2 ≤ 3.5e-6) (hδ' : 2 * δ < δ') :
     ∃ q0 : ℕ, ∀ s q : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 →
-      (∀ L P, Rdelta δ s q L P → ∀ k ≤ L, Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q))) → WF δ s q := by
+      (∀ L P, RdeltaG a b δ s q L P → ∀ k ≤ L, Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q))) →
+        WFG a b δ s q := by
   obtain ⟨q1, hq1⟩ := D_asymp (δ' - 2 * δ) (by linarith)
   refine ⟨max q1 67, fun s q hq _ hs2 hA => ?_⟩
   intro L P hR
@@ -141,14 +157,23 @@ theorem thmB (δ δ' : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ' : 2 * δ <
   have hs : (s : ℝ) ≤ 1.94 * q := by rwa [div_le_iff₀ hqpos] at hs2
   have hAk := hA L P hR
   obtain ⟨hL0, hL1, _, hp1, _, hTne, hPs⟩ := hR
+  have hp1' : hp q P ≤ 1.23e-3 * q := hp1.trans (mul_le_mul_of_nonneg_right haδ hqpos.le)
+  have hL1' : hL s L ≤ 3.5e-6 * q := hL1.trans (mul_le_mul_of_nonneg_right hbδ hqpos.le)
   have ht : 0 < s - P := by omega
   have hLp : Lp q ≤ L := by have := D_Lp_lt hTne ht; omega
-  have h2t := D_two_pow_lt hδ hδ1 hq67 hs hp1 hPs
+  have h2t := D_two_pow_lt' hq67 hs hp1' hPs
   have hB : (0 : ℝ) ≤ (2 : ℝ) ^ (-(δ' * q)) := by positivity
   have hLam := D_LamLP_le (by omega) hLp ht h2t hTne _ hB hAk
   have hE := E_lower q (by omega) (hL s L) hL0
-  have hLq := D_L_bound hδ hδ1 (by omega) hs hL1
+  have hLq := D_L_bound' (by omega) hs hL1'
   exact D_final_real q (by omega) cc δ δ' L _ _ hE hLq (by positivity) (by simpa [mul_assoc] using hLam)
     (hq1 q hqq1)
+
+/-- Theorem B: let `1 < s/q ≤ 1.94`, `0 < δ ≤ 10^{−3}`, `δ' > 2δ`. If `q` is sufficiently large (depending on `δ, δ'`) and
+`A_k ≤ 2^{−δ'q}` for every slice of `R_δ` and every shell `0 ≤ k ≤ L`, then (WF)(δ). -/
+theorem thmB (δ δ' : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ' : 2 * δ < δ') :
+    ∃ q0 : ℕ, ∀ s q : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 →
+      (∀ L P, Rdelta δ s q L P → ∀ k ≤ L, Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q))) → WF δ s q :=
+  thmBG 1.23 3.5 δ δ' (by linarith) (by nlinarith) hδ'
 
 end Collatz.M1

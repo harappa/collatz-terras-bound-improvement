@@ -887,10 +887,10 @@ theorem H_tail (q s L P j0 D k : ℕ) (p : ℝ) (hp : 2 ≤ p) (τ : Fin (s - P)
 
 /-! ## Proposition 10.2 -/
 
-/-- Proposition 10.2: let `D ≥ 2`, `p ≥ 2`, `B = q2^{h_L}`. For every shell `0 ≤ k ≤ L`,
-`A_k^{>j₀}/(1 − ϖ_{j₀}) ≤ 𝔼_τ 2^{−N_D} + S_p^*(B)^{1/p} 𝔼_τ φ_p^{N_D} + err_k`. -/
-theorem holder (δ : ℝ) (s q L P j0 D k : ℕ) (p : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
-    (hsq1 : 1 < (s : ℝ) / q) (hsq2 : (s : ℝ) / q ≤ 1.94) (hq : 20 ≤ q) (hR : Rdelta δ s q L P)
+/-- General form of Proposition 10.2 (the slice is in `RdeltaG a b δ`; only `𝒯_{L,P} ≠ ∅` is used): if `D ≥ 2`, `p ≥ 2` and `B = q2^{h_L}`, then,
+for every shell `0 ≤ k ≤ L`, `A_k^{>j₀}/(1 − ϖ_{j₀}) ≤ 𝔼_τ 2^{−N_D} + S_p^*(B)^{1/p} 𝔼_τ φ_p^{N_D} + err_k`. -/
+theorem holderG (a b δ : ℝ) (s q L P j0 D k : ℕ) (p : ℝ)
+    (hsq2 : (s : ℝ) / q ≤ 1.94) (hq : 20 ≤ q) (hR : RdeltaG a b δ s q L P)
     (hD : 2 ≤ D) (hp : 2 ≤ p) (hk : k ≤ L) (hvar : varpi q s L j0 < 1)
     (hW : 0 < Wsum q (Eset q (hL s L))) :
     AkDeep q s L P k j0 / (1 - varpi q s L j0) ≤
@@ -930,5 +930,17 @@ theorem holder (δ : ℝ) (s q L P j0 D k : ℕ) (p : ℝ) (hδ : 0 < δ) (hδ1 
       rw [Finset.sum_add_distrib, Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul,
         ← Finset.mul_sum]
       field_simp
+
+/-- Proposition 10.2: let `D ≥ 2`, `p ≥ 2`, `B = q2^{h_L}`. For every shell `0 ≤ k ≤ L`,
+`A_k^{>j₀}/(1 − ϖ_{j₀}) ≤ 𝔼_τ 2^{−N_D} + S_p^*(B)^{1/p} 𝔼_τ φ_p^{N_D} + err_k`. -/
+theorem holder (δ : ℝ) (s q L P j0 D k : ℕ) (p : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
+    (hsq1 : 1 < (s : ℝ) / q) (hsq2 : (s : ℝ) / q ≤ 1.94) (hq : 20 ≤ q) (hR : Rdelta δ s q L P)
+    (hD : 2 ≤ D) (hp : 2 ≤ p) (hk : k ≤ L) (hvar : varpi q s L j0 < 1)
+    (hW : 0 < Wsum q (Eset q (hL s L))) :
+    AkDeep q s L P k j0 / (1 - varpi q s L j0) ≤
+      ETail q s L P D (fun n => (2:ℝ) ^ (-(n : ℝ))) +
+        Sstar q s L j0 D p (q * (2:ℝ) ^ hL s L) ^ (1 / p) * ETail q s L P D (fun n => phiP p ^ n) +
+        errK q k :=
+  holderG 1.23 3.5 δ s q L P j0 D k p hsq2 hq hR hD hp hk hvar hW
 
 end Collatz.M1

@@ -48,6 +48,62 @@ lemma K_term2 (q s L P : ℕ) (cD Θs δ' : ℝ) (hΘ34 : 3/4 ≤ Θs) (hΘ1 : �
   linarith [show 8 * (8 * ((q:ℝ) + 2) ^ 2 * (Θs ^ (cD / 2)) ^ q) * ((2:ℝ) ^ δ') ^ q =
     64 * ((q:ℝ) + 2) ^ 2 * ((Θs ^ (cD / 2)) ^ q * ((2:ℝ) ^ δ') ^ q) by ring]
 
+/-- General form of the third term: if `t* h_L ≤ Eq`, then `S_p^*(B)^{1/p} 𝔼_τ φ_p^{N_D} ≤ 2^{−δ'q}/8` (the factor in the rate is `2^E`;
+version 2 has `E = 2δ²` from `h_L ≤ 3.5δ²q`, version 3 has `E = 2.2δ²` from `h_L ≤ 4.48δ²q`). -/
+lemma K_term3G (q s L P j0 p : ℕ) (cD Θφ E δ' : ℝ) (hp : 2 ≤ p) (hΘ34 : 3/4 ≤ Θφ) (hΘ1 : Θφ ≤ 1)
+    (hD2 : 2 ≤ ⌊cD * q⌋₊) (hDt : ⌊cD * q⌋₊ ≤ s - P - 1) (hL0 : 0 ≤ hL s L)
+    (htL : tstar * hL s L ≤ E * q) (hTne : (Tset q s L P).Nonempty)
+    (hφ1 : 1/2 ≤ phiP p) (hφ2 : phiP p ≤ 1) (hΘ : Theta (phiP p) (rhoBar q s L P) ≤ Θφ)
+    (hsP2 : ((s - P : ℕ) : ℝ) * ((s - P - 1 : ℕ) : ℝ) ≤ 4 * ((q:ℝ) + 2) ^ 2)
+    (hj0 : 2 * j0 < q) (hbp : ((1 + rc) / 2) ^ p ≤ 1/4)
+    (hSS : Sstar q s L j0 ⌊cD * q⌋₊ p (q * (2:ℝ) ^ hL s L) ≤
+      ((q:ℝ) + 2) ^ ((2:ℝ) * ((p:ℝ) - 1)) * (4:ℝ) ^ (p:ℝ) * 25 * (2:ℝ) ^ ((p:ℝ) - 1) *
+        ((2:ℝ) ^ (tstar * hL s L + 1.1) * q * (q + 1)) ^ (p:ℝ) *
+        ((1 + rc ^ (p:ℝ)) ^ q + (2:ℝ) ^ q * ((1 + rc) / 2) ^ ((p:ℝ) * ((q:ℝ) - j0))))
+    (hE : 8 * (1600 * (2:ℝ) ^ (1.1:ℝ)) * ((q:ℝ) + 2) ^ 6 *
+      ((2:ℝ) ^ E * (1 + rc ^ p) ^ (1 / (p:ℝ)) * Θφ ^ (cD / 2) * (2:ℝ) ^ δ') ^ q ≤ 1) :
+    Sstar q s L j0 ⌊cD * q⌋₊ p (q * (2:ℝ) ^ hL s L) ^ (1 / (p:ℝ)) *
+      ETail q s L P ⌊cD * q⌋₊ (fun n => phiP p ^ n) ≤ (2:ℝ) ^ (-(δ' * q)) / 8 := by
+  obtain ⟨hts1, hts2⟩ := tstar_bounds
+  obtain ⟨hr1, -⟩ := rc_bounds
+  have hq0 : (0:ℝ) ≤ q := Nat.cast_nonneg q
+  set X := (2:ℝ) ^ (tstar * hL s L + 1.1) * q * (q + 1) with hX
+  have hroot := K_root_bound p q j0 (by omega) hj0 X _ (by positivity) (K_Sstar_nonneg _ _ _ _ _ _ _)
+    hbp (by linarith) hSS
+  -- X ≤ 2^{1.1}(q+2)²(2^E)^q
+  have hXle : X ≤ (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ E) ^ q := by
+    have h1 : tstar * hL s L ≤ E * q := htL
+    have h2 : (2:ℝ) ^ (tstar * hL s L) ≤ ((2:ℝ) ^ E) ^ q := by
+      rw [← Real.rpow_mul_natCast (by norm_num)]
+      exact Real.rpow_le_rpow_of_exponent_le (by norm_num) h1
+    have h3 : (q:ℝ) * (q + 1) ≤ ((q:ℝ) + 2) ^ 2 := by nlinarith
+    rw [hX, Real.rpow_add (by norm_num)]
+    calc (2:ℝ) ^ (tstar * hL s L) * 2 ^ (1.1:ℝ) * q * (q + 1)
+        = (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) * (q + 1)) * (2:ℝ) ^ (tstar * hL s L) := by ring
+      _ ≤ (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ E) ^ q := by gcongr
+  have hwin := K_window q s L P (phiP p) cD Θφ hφ1 hφ2 hΘ34 hΘ1 hD2 hDt hL0 hTne hΘ hsP2
+  have hET0 : 0 ≤ ETail q s L P ⌊cD * q⌋₊ (fun n => phiP p ^ n) := by
+    unfold ETail
+    exact div_nonneg (Finset.sum_nonneg (fun τ _ => pow_nonneg (by linarith) _)) (Nat.cast_nonneg _)
+  set ρ1 := (1 + rc ^ p) ^ (1 / (p:ℝ)) with hρ1
+  set ϑ := Θφ ^ (cD / 2) with hϑ
+  have hρ10 : 0 ≤ ρ1 := by positivity
+  have hϑ0 : 0 ≤ ϑ := by rw [hϑ]; exact Real.rpow_nonneg (by linarith) _
+  apply K_fin _ (1600 * (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 6 * ((2:ℝ) ^ E * ρ1 * ϑ) ^ q) δ' q
+  · have hS1 : Sstar q s L j0 ⌊cD * q⌋₊ p (q * (2:ℝ) ^ hL s L) ^ (1 / (p:ℝ)) ≤
+        200 * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ E) ^ q) *
+          ρ1 ^ q := by
+      refine hroot.trans ?_
+      gcongr
+    calc _ ≤ (200 * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 *
+            ((2:ℝ) ^ E) ^ q) * ρ1 ^ q) * (8 * ((q:ℝ) + 2) ^ 2 * ϑ ^ q) :=
+          mul_le_mul hS1 hwin hET0 (by positivity)
+      _ = _ := by rw [mul_pow, mul_pow]; ring
+  · rw [mul_pow] at hE
+    linarith [show 8 * (1600 * (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 6 * ((2:ℝ) ^ E * ρ1 * ϑ) ^ q) *
+      ((2:ℝ) ^ δ') ^ q = 8 * (1600 * (2:ℝ) ^ (1.1:ℝ)) * ((q:ℝ) + 2) ^ 6 *
+      (((2:ℝ) ^ E * ρ1 * ϑ) ^ q * ((2:ℝ) ^ δ') ^ q) by ring]
+
 /-- Third term: `S_p^*(B)^{1/p} 𝔼_τ φ_p^{N_D} ≤ 2^{−δ'q}/8` (the bound `hSS` on `S_p^*` comes from Propositions 11.3 and 11.5, Corollary 12.2 and Proposition 12.4). -/
 lemma K_term3 (q s L P j0 p : ℕ) (cD Θφ δ δ' : ℝ) (hp : 2 ≤ p) (hΘ34 : 3/4 ≤ Θφ) (hΘ1 : Θφ ≤ 1)
     (hD2 : 2 ≤ ⌊cD * q⌋₊) (hDt : ⌊cD * q⌋₊ ≤ s - P - 1) (hL0 : 0 ≤ hL s L)
@@ -63,49 +119,14 @@ lemma K_term3 (q s L P j0 p : ℕ) (cD Θφ δ δ' : ℝ) (hp : 2 ≤ p) (hΘ34 
       ((2:ℝ) ^ (2 * δ ^ 2) * (1 + rc ^ p) ^ (1 / (p:ℝ)) * Θφ ^ (cD / 2) * (2:ℝ) ^ δ') ^ q ≤ 1) :
     Sstar q s L j0 ⌊cD * q⌋₊ p (q * (2:ℝ) ^ hL s L) ^ (1 / (p:ℝ)) *
       ETail q s L P ⌊cD * q⌋₊ (fun n => phiP p ^ n) ≤ (2:ℝ) ^ (-(δ' * q)) / 8 := by
-  obtain ⟨hts1, hts2⟩ := tstar_bounds
-  obtain ⟨hr1, -⟩ := rc_bounds
-  have hq0 : (0:ℝ) ≤ q := Nat.cast_nonneg q
-  set X := (2:ℝ) ^ (tstar * hL s L + 1.1) * q * (q + 1) with hX
-  have hroot := K_root_bound p q j0 (by omega) hj0 X _ (by positivity) (K_Sstar_nonneg _ _ _ _ _ _ _)
-    hbp (by linarith) hSS
-  -- X ≤ 2^{1.1}(q+2)²(2^{2δ²})^q
-  have hXle : X ≤ (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (2 * δ ^ 2)) ^ q := by
-    have h1 : tstar * hL s L ≤ 2 * δ ^ 2 * q := by
-      have : tstar * hL s L ≤ 0.4881 * (3.5 * δ ^ 2 * q) :=
-        mul_le_mul hts2.le hLup hL0 (by norm_num)
-      have : 0 ≤ δ ^ 2 * q := by positivity
-      linarith
-    have h2 : (2:ℝ) ^ (tstar * hL s L) ≤ ((2:ℝ) ^ (2 * δ ^ 2)) ^ q := by
-      rw [← Real.rpow_mul_natCast (by norm_num)]
-      exact Real.rpow_le_rpow_of_exponent_le (by norm_num) h1
-    have h3 : (q:ℝ) * (q + 1) ≤ ((q:ℝ) + 2) ^ 2 := by nlinarith
-    rw [hX, Real.rpow_add (by norm_num)]
-    calc (2:ℝ) ^ (tstar * hL s L) * 2 ^ (1.1:ℝ) * q * (q + 1)
-        = (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) * (q + 1)) * (2:ℝ) ^ (tstar * hL s L) := by ring
-      _ ≤ (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (2 * δ ^ 2)) ^ q := by gcongr
-  have hwin := K_window q s L P (phiP p) cD Θφ hφ1 hφ2 hΘ34 hΘ1 hD2 hDt hL0 hTne hΘ hsP2
-  have hET0 : 0 ≤ ETail q s L P ⌊cD * q⌋₊ (fun n => phiP p ^ n) := by
-    unfold ETail
-    exact div_nonneg (Finset.sum_nonneg (fun τ _ => pow_nonneg (by linarith) _)) (Nat.cast_nonneg _)
-  set ρ1 := (1 + rc ^ p) ^ (1 / (p:ℝ)) with hρ1
-  set ϑ := Θφ ^ (cD / 2) with hϑ
-  have hρ10 : 0 ≤ ρ1 := by positivity
-  have hϑ0 : 0 ≤ ϑ := by rw [hϑ]; exact Real.rpow_nonneg (by linarith) _
-  apply K_fin _ (1600 * (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 6 * ((2:ℝ) ^ (2 * δ ^ 2) * ρ1 * ϑ) ^ q) δ' q
-  · have hS1 : Sstar q s L j0 ⌊cD * q⌋₊ p (q * (2:ℝ) ^ hL s L) ^ (1 / (p:ℝ)) ≤
-        200 * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (2 * δ ^ 2)) ^ q) *
-          ρ1 ^ q := by
-      refine hroot.trans ?_
-      gcongr
-    calc _ ≤ (200 * ((q:ℝ) + 2) ^ 2 * ((2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 2 *
-            ((2:ℝ) ^ (2 * δ ^ 2)) ^ q) * ρ1 ^ q) * (8 * ((q:ℝ) + 2) ^ 2 * ϑ ^ q) :=
-          mul_le_mul hS1 hwin hET0 (by positivity)
-      _ = _ := by rw [mul_pow, mul_pow]; ring
-  · rw [mul_pow] at hE
-    linarith [show 8 * (1600 * (2:ℝ) ^ (1.1:ℝ) * ((q:ℝ) + 2) ^ 6 * ((2:ℝ) ^ (2 * δ ^ 2) * ρ1 * ϑ) ^ q) *
-      ((2:ℝ) ^ δ') ^ q = 8 * (1600 * (2:ℝ) ^ (1.1:ℝ)) * ((q:ℝ) + 2) ^ 6 *
-      (((2:ℝ) ^ (2 * δ ^ 2) * ρ1 * ϑ) ^ q * ((2:ℝ) ^ δ') ^ q) by ring]
+  have htL : tstar * hL s L ≤ 2 * δ ^ 2 * q := by
+    obtain ⟨-, hts2⟩ := tstar_bounds
+    have : tstar * hL s L ≤ 0.4881 * (3.5 * δ ^ 2 * q) :=
+      mul_le_mul hts2.le hLup hL0 (by norm_num)
+    have : 0 ≤ δ ^ 2 * q := by positivity
+    linarith
+  exact K_term3G q s L P j0 p cD Θφ (2 * δ ^ 2) δ' hp hΘ34 hΘ1 hD2 hDt hL0 htL hTne hφ1 hφ2 hΘ hsP2
+    hj0 hbp hSS hE
 
 /-- `Y ≥ 0` and `Y ≤ (δ'q + 3 + 2 log₂ q)/l`. -/
 lemma K_Yout_le (q s : ℕ) (δ' Θs l : ℝ) (hl : l = Real.logb 2 (1 / Θs)) (hl0 : 0 < l) (hδ' : 0 ≤ δ')

@@ -22,13 +22,21 @@ namespace Collatz.M1
 
 open Finset Filter Topology
 
+/-- The form of the conclusion of Proposition 13.2 (the supply of the lattice condition): for all sufficiently large `q` (the threshold does not depend on `L`, `s`), if `1 < s/q ≤ 1.94` and
+`0 ≤ h_L ≤ 10^{−8}q`, then `LatticeCond q L ⌊c_D q⌋ (q2^D(q2^{h_L} + 1))`. Version 2 supplies it from Theorem 2 of Bugeaud (2002)
+for `c_D ≤ 9×10^{−4}` (`hgt`, Proposition 13.2), version 3 from Theorem 1 for `c_D ≤ 9×10^{−3}` (`hgt_thm1`, Proposition 13.2B; Proposition 15.5 of the paper). -/
+def HgtSupply (cD : ℝ) : Prop :=
+  ∃ q0 : ℕ, ∀ s q L : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 → 0 ≤ hL s L →
+    hL s L ≤ 1e-8 * q →
+    LatticeCond q L ⌊cD * q⌋₊ (q * 2 ^ ⌊cD * q⌋₊ * (q * (2:ℝ) ^ hL s L + 1))
+
 set_option maxHeartbeats 2000000 in
 /-- Core of Proposition 14.1 (in terms of `q`): for `η > 0` there is `δ > 0` (with `δ' = 3δ`) such that, if `q` is sufficiently large,
 `1 < s/q ≤ 1.94` and `s − q ≥ ηq`, then `A_k ≤ 2^{−δ'q}` for every slice of `R_δ` and every shell.
 The constants are the qualitative version of the rule of manuscript §14.1: `ρ♯ = ρ_c + 1/10`, `Θ_* = Θ_{1/2}(ρ♯)`, `c_D = min(9×10^{−4}, η/2)`,
 `p` is an integer with `r_c^p ≤ c_D w/4` and `((1+r_c)/2)^p ≤ 1/4` (where `w = ρ♯(1 − ρ♯)`),
 `δ = min(10^{−5}, η/100, c_D w/(20p))`. -/
-theorem K_core (hBug : BugeaudHyp) (η : ℝ) (hη : 0 < η) :
+theorem K_coreG (hH : ∀ cD : ℝ, 0 < cD → cD ≤ 9e-4 → HgtSupply cD) (η : ℝ) (hη : 0 < η) :
     ∃ δ δ' : ℝ, 0 < δ ∧ δ ≤ 1e-3 ∧ 2 * δ < δ' ∧ ∃ q0 : ℕ, ∀ s q : ℕ, q0 ≤ q → 1 < (s:ℝ) / q →
       (s:ℝ) / q ≤ 1.94 → η * q ≤ (s:ℝ) - q →
       ∀ L P, Rdelta δ s q L P → ∀ k ≤ L, Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q)) := by
@@ -125,7 +133,7 @@ theorem K_core (hBug : BugeaudHyp) (η : ℝ) (hη : 0 < η) :
   -- thresholds of the components
   obtain ⟨qj, hj⟩ := choose_j0 δ (3 * δ) hδ0 hδ1e3 hδ'0 hδ'c
   obtain ⟨qo, ho⟩ := outer_shells δ (3 * δ) Θs hδ0 hδ1e3 hδ'0 hΘs0 hΘs1
-  obtain ⟨qh, hh⟩ := hgt hBug cD hcD0 hcD1
+  obtain ⟨qh, hh⟩ := hH cD hcD0 hcD1
   -- the inequalities that eventually hold
   have ev := ((((((((eventually_ge_atTop (max (max 20 qj) (max qo qh))).and
     (K_ev_lin (2 / cD) 1 one_pos)).and
@@ -247,13 +255,21 @@ theorem K_core (hBug : BugeaudHyp) (η : ℝ) (hη : 0 < η) :
   have hpos2 : (0:ℝ) < (2:ℝ) ^ (-(3 * δ * q)) := by positivity
   linarith only [hsplit, hdeep, hvar2, hT2, hT3, hT4, hpos2]
 
-/-- Proposition 14.1: for `α ∈ (1/2, 0.659]` there are `0 < δ ≤ 10^{−3}` and `δ' > 2δ` such that, for all sufficiently large `K`,
+/-- The core of Proposition 14.1 (from Theorem 2 of Bugeaud (2002), via `hgt`): the specialization of `K_coreG`, which takes the supply of the lattice condition as an argument. -/
+theorem K_core (hBug : BugeaudHyp) (η : ℝ) (hη : 0 < η) :
+    ∃ δ δ' : ℝ, 0 < δ ∧ δ ≤ 1e-3 ∧ 2 * δ < δ' ∧ ∃ q0 : ℕ, ∀ s q : ℕ, q0 ≤ q → 1 < (s:ℝ) / q →
+      (s:ℝ) / q ≤ 1.94 → η * q ≤ (s:ℝ) - q →
+      ∀ L P, Rdelta δ s q L P → ∀ k ≤ L, Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q)) :=
+  K_coreG (fun cD h0 h1 => hgt hBug cD h0 h1) η hη
+
+/-- Proposition 14.1 (with the supply of the lattice condition as an argument): for `α ∈ (1/2, 0.659]` there are `0 < δ ≤ 10^{−3}` and `δ' > 2δ` such that, for all sufficiently large `K`,
 `A_k ≤ 2^{−δ'q}` for every slice of `R_δ` and every shell `0 ≤ k ≤ L`. -/
-theorem all_shells (hBug : BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+theorem all_shellsG (hH : ∀ cD : ℝ, 0 < cD → cD ≤ 9e-4 → HgtSupply cD) (α : ℝ) (hα : 1 / 2 < α)
+    (hα' : α ≤ 0.659) :
     ∃ δ δ' : ℝ, 0 < δ ∧ δ ≤ 1e-3 ∧ 2 * δ < δ' ∧ ∃ K0 : ℕ, ∀ K ≥ K0,
       ∀ L P, Rdelta δ (sOf α K) (K - sOf α K) L P → ∀ k ≤ L,
         Ak (K - sOf α K) (sOf α K) L P k ≤ (2:ℝ) ^ (-(δ' * (K - sOf α K : ℕ))) := by
-  obtain ⟨δ, δ', hδ, hδ1, hδ', q0, hcore⟩ := K_core hBug (2 * α - 1) (by linarith)
+  obtain ⟨δ, δ', hδ, hδ1, hδ', q0, hcore⟩ := K_coreG hH (2 * α - 1) (by linarith)
   refine ⟨δ, δ', hδ, hδ1, hδ', ?_⟩
   obtain ⟨K0, hK0⟩ := sOf_ratio α hα hα' (max q0 1)
   refine ⟨K0, fun K hK L P hR k hk => ?_⟩
@@ -268,13 +284,19 @@ theorem all_shells (hBug : BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α 
   have hK0' : (0:ℝ) ≤ K := Nat.cast_nonneg K
   nlinarith [mul_nonneg (show (0:ℝ) ≤ 2 * α - 1 by linarith) hK0']
 
-/-- **Main theorem (Theorem 1.1 of the paper, range version, qualitative form)**: assuming Theorem 2 of Bugeaud (2002), for every `α ∈ (1/2, 0.659]`
-there are `ε > 0` and `K₀` such that `#(𝒩_K ∩ [1, 2^{αK}]) ≤ 2^{(α(1−c) − ε)K}` for all `K ≥ K₀`.
-In particular `F(α) ≤ α(1−c) − ε` (strictly below the Terras-type upper bound `α(1−c)`). -/
-theorem m1_main (hBug : BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+/-- Proposition 14.1 (from Theorem 2 of Bugeaud (2002)). -/
+theorem all_shells (hBug : BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+    ∃ δ δ' : ℝ, 0 < δ ∧ δ ≤ 1e-3 ∧ 2 * δ < δ' ∧ ∃ K0 : ℕ, ∀ K ≥ K0,
+      ∀ L P, Rdelta δ (sOf α K) (K - sOf α K) L P → ∀ k ≤ L,
+        Ak (K - sOf α K) (sOf α K) L P k ≤ (2:ℝ) ^ (-(δ' * (K - sOf α K : ℕ))) :=
+  all_shellsG (fun cD h0 h1 => hgt hBug cD h0 h1) α hα hα'
+
+/-- The main theorem (qualitative form), with the supply of the lattice condition as an argument. -/
+theorem m1_mainG (hH : ∀ cD : ℝ, 0 < cD → cD ≤ 9e-4 → HgtSupply cD) (α : ℝ) (hα : 1 / 2 < α)
+    (hα' : α ≤ 0.659) :
     ∃ ε > 0, ∃ K0 : ℕ, ∀ K ≥ K0,
       (NKcount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ (2:ℝ) ^ ((α * (1 - cc) - ε) * K) := by
-  obtain ⟨δ, δ', hδ, hδ1, hδ', K0, hshell⟩ := all_shells hBug α hα hα'
+  obtain ⟨δ, δ', hδ, hδ1, hδ', K0, hshell⟩ := all_shellsG hH α hα hα'
   obtain ⟨q0, hB⟩ := thmB δ δ' hδ hδ1 hδ'
   obtain ⟨K1, hK1⟩ := sOf_ratio α hα hα' q0
   have hWF : ∃ K2 : ℕ, ∀ K ≥ K2, WF δ (sOf α K) (K - sOf α K) := by
@@ -293,5 +315,13 @@ theorem m1_main (hBug : BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤
       positivity
   refine ⟨m / 2, by positivity, ?_⟩
   exact corA α δ hα hα' hδ hδ1 hWF (m / 2) (by linarith)
+
+/-- **Main theorem (Theorem 1.1 of the paper, range version, qualitative form)**: assuming Theorem 2 of Bugeaud (2002), for every `α ∈ (1/2, 0.659]`
+there are `ε > 0` and `K₀` such that `#(𝒩_K ∩ [1, 2^{αK}]) ≤ 2^{(α(1−c) − ε)K}` for all `K ≥ K₀`.
+In particular `F(α) ≤ α(1−c) − ε` (strictly below the Terras-type upper bound `α(1−c)`). -/
+theorem m1_main (hBug : BugeaudHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+    ∃ ε > 0, ∃ K0 : ℕ, ∀ K ≥ K0,
+      (NKcount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ (2:ℝ) ^ ((α * (1 - cc) - ε) * K) :=
+  m1_mainG (fun cD h0 h1 => hgt hBug cD h0 h1) α hα hα'
 
 end Collatz.M1

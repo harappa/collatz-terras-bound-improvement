@@ -209,10 +209,10 @@ theorem F_varpi_zero (q s L : ℕ) : varpi q s L 0 = 0 := by
     have := F_dep_pos q ξ hξ.1 hξ.2
     omega
 
-/-- Lemma 7.5 (choice of `j₀`): let `0 < δ ≤ 10^{−3}`, `0 < δ' < c/2`. For sufficiently large `q`, for each slice of `R_δ`
-there is `j₀` with `2j₀ < q` and `ϖ_{j₀} ≤ 2^{−δ'q−1}`, and `|E| ≤ 2^{q−1}`. -/
-theorem choose_j0 (δ δ' : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ'0 : 0 < δ') (hδ'c : δ' < cc / 2) :
-    ∃ q0 : ℕ, ∀ s q L P : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 → Rdelta δ s q L P →
+/-- General form of Lemma 7.5 (`RdeltaG a b δ`, `bδ² ≤ 3.5×10^{−6}`): let `0 < δ' < c/2`. For all sufficiently large `q`, for each slice
+there is `j₀` with `2j₀ < q` and `ϖ_{j₀} ≤ 2^{−δ'q−1}`, and `|E| ≤ 2^{q−1}`. Version 3 has `h_L ≤ 4.48δ²q` (§4.2.3 of version 3 of the manuscript). -/
+theorem choose_j0G (a b δ δ' : ℝ) (hbδ : b * δ ^ 2 ≤ 3.5e-6) :
+    ∃ q0 : ℕ, ∀ s q L P : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 → RdeltaG a b δ s q L P →
       ∃ j0 : ℕ, 2 * j0 < q ∧ varpi q s L j0 ≤ (2:ℝ) ^ (-(δ' * q) - 1) ∧
         ((Eset q (hL s L)).card : ℝ) ≤ 2 ^ (q - 1) := by
   -- `j₀ = 0` suffices: the depth of `ξ ∈ [1, 2^q)` is at least 1, so `ϖ₀ = 0` (`F_varpi_zero`).
@@ -224,15 +224,22 @@ theorem choose_j0 (δ δ' : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ'0 : 0 
     have hc := cc_bounds
     have ht := tstar_bounds
     have hqr : (21:ℝ) ≤ q := by exact_mod_cast hq
-    have hδ2 : δ ^ 2 ≤ 1e-6 := by nlinarith
     have hexp : (1 - cc) * q + tstar * hL s L ≤ ((q - 1 : ℕ) : ℝ) := by
       rw [Nat.cast_sub (by omega), Nat.cast_one]
-      have h1 : hL s L ≤ 3.5e-6 * q := by nlinarith
+      have h1 : hL s L ≤ 3.5e-6 * q := hL1.trans (mul_le_mul_of_nonneg_right hbδ (by positivity))
       have h2 : tstar * hL s L ≤ 0.4881 * (3.5e-6 * q) :=
         mul_le_mul (le_of_lt ht.2) h1 hL0 (by norm_num)
       nlinarith
     calc ((Eset q (hL s L)).card : ℝ) ≤ (2:ℝ) ^ ((1 - cc) * q + tstar * hL s L) := hE
       _ ≤ (2:ℝ) ^ (((q - 1 : ℕ) : ℝ)) := Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp
       _ = 2 ^ (q - 1) := Real.rpow_natCast 2 (q - 1)
+
+/-- Lemma 7.5 (choice of `j₀`): let `0 < δ ≤ 10^{−3}`, `0 < δ' < c/2`. For sufficiently large `q`, for each slice of `R_δ`
+there is `j₀` with `2j₀ < q` and `ϖ_{j₀} ≤ 2^{−δ'q−1}`, and `|E| ≤ 2^{q−1}`. -/
+theorem choose_j0 (δ δ' : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ'0 : 0 < δ') (hδ'c : δ' < cc / 2) :
+    ∃ q0 : ℕ, ∀ s q L P : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 → Rdelta δ s q L P →
+      ∃ j0 : ℕ, 2 * j0 < q ∧ varpi q s L j0 ≤ (2:ℝ) ^ (-(δ' * q) - 1) ∧
+        ((Eset q (hL s L)).card : ℝ) ≤ 2 ^ (q - 1) :=
+  choose_j0G 1.23 3.5 δ δ' (by nlinarith)
 
 end Collatz.M1

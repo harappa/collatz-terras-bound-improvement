@@ -15,6 +15,11 @@ Assembly of the proof. Uses the auxiliary files `C_Words` (words and numbers), `
   The gain coefficient is `1 − 1.23((1−c) + t*)/2 ≥ 0.115` (the manuscript has `0.0037`).
 - For `S₃`, the gain `1.708δ²q` is shown by a tilted Chernoff form instead of Pinsker's inequality (the manuscript has `1.727`).
   For `S₂`, the same `3.5t* ≥ 1.708` as in the manuscript.
+
+**General forms** (for version 3 of the proof manuscript): `C_cls_S1G`, `C_cls_boundG`, `C_thmAG` and `C_corAG` take as arguments the constants `(a, b)` of `R_δ` (`RdeltaG a b δ`, `WFG a b δ`), the slope `1 + κδ` of `S₃`
+and the gain coefficients `g₁` (`S₁`), `g` (`S₂`, `S₃`) and `G` (Corollary A); the lemmas `C_cls_S1`, `C_cls_bound`, `C_thmA`, `C_corA` of version 2 are kept, with unchanged
+statements, as their special cases `(a, b, κ, g₁, g, G) = (1.23, 3.5, 10/3, 0.0037, 1.708, 1.70)`.
+Version 3 (`(1.38, 4.48, 15/4, 0.0055, 2.18, 2.18)`; the constants of revision r7 of the paper) is in `ThmAV3.lean`.
 -/
 
 namespace Collatz.M1
@@ -141,11 +146,13 @@ lemma C_FS_eq (q s L P : ℕ) (hE : 0 < (Eset q (hL s L)).card) (hT : 0 < (Tset 
   simp only [Complex.norm_natCast]
   ring
 
-/-- `S₁` (slices of `R_δ`): bound on the class size from (WF). -/
-lemma C_cls_S1 {s q L P : ℕ} (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
-    (hR : Rdelta δ s q L P) (hWF : LamLP q s L P ≤ (2:ℝ) ^ ((cc - 2 * δ) * q))
+/-- General form of `S₁` (slices of `RdeltaG a b δ`): the bound on the class size from (WF). The gain coefficient `g₁` satisfies
+`1.4381a + 2g₁ ≤ 2` (`(1−c) + t* < 1.4381`). Version 2 has `(a, g₁) = (1.23, 0.0037)`, version 3 has `(1.38, 0.0055)`. -/
+lemma C_cls_S1G {s q L P : ℕ} (a b δ g1 : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 < δ)
+    (hδ1 : δ ≤ 1e-3) (hag : 1.4381 * a + 2 * g1 ≤ 2)
+    (hR : RdeltaG a b δ s q L P) (hWF : LamLP q s L P ≤ (2:ℝ) ^ ((cc - 2 * δ) * q))
     (hne : (C_cls s q L P).Nonempty) :
-    ((C_cls s q L P).card : ℝ) ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s - 0.0037 * δ * q) := by
+    ((C_cls s q L P).card : ℝ) ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s - g1 * δ * q) := by
   classical
   obtain ⟨n, hn⟩ := hne
   obtain ⟨hPs, hLLp, _, _, hhL, hhp, hwP, hτT⟩ := C_cls_facts hq hqs hn
@@ -191,7 +198,7 @@ lemma C_cls_S1 {s q L P : ℕ} (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 
       apply Real.one_le_rpow (by norm_num)
       apply mul_nonneg _ (by positivity); linarith
     linarith
-  set X := (1 - cc) * s - 0.0037 * δ * q with hX
+  set X := (1 - cc) * s - g1 * δ * q with hX
   set a1 := (1 - cc) * P - tstar * hp q P
   set a2 := (1 - cc) * q + tstar * hL s L
   set a3 := (1 - cc) * (s - P) - tstar * (hL s L - hp q P)
@@ -203,13 +210,14 @@ lemma C_cls_S1 {s q L P : ℕ} (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 
       have h2 : (1 - cc) * lam ≤ 0.95 * 1.585 :=
         mul_le_mul (by linarith) hl2.le (by linarith) (by norm_num)
       linarith
-    have k2 : ((1 - cc) + tstar) * hp q P ≤ 1.4381 * (1.23 * δ * q) := by
+    have k2 : ((1 - cc) + tstar) * hp q P ≤ 1.4381 * (a * δ * q) := by
       apply mul_le_mul (by linarith) hhp2 hhp.le (by norm_num)
     have e : a1 + 2 * a2 + 2 * a3 + (cc - 2 * δ) * q - q =
         2 * ((1 - cc) * s) + (1 - cc) * (q - lam * Lp q) + ((1 - cc) + tstar) * hp q P - 2 * δ * q := by
       simp only [a1, a2, a3]; unfold hp; ring
     rw [e, hX]
     have : 0 ≤ δ * q := by positivity
+    have k3 : (1.4381 * a + 2 * g1) * (δ * q) ≤ 2 * (δ * q) := mul_le_mul_of_nonneg_right hag this
     linarith
   have hbound : 4 * ((Pset q P).card : ℝ) * ((Lp q / 3 + 1 : ℕ) : ℝ) / 2 ^ q *
       ((E.card : ℝ) ^ 2 * ((Tset q s L P).card : ℝ) ^ 2 * (1 + LamLP q s L P)) ≤
@@ -247,12 +255,23 @@ lemma C_cls_S1 {s q L P : ℕ} (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 
       _ = _ := by ring
   exact (pow_le_pow_iff_left₀ (by positivity) (by positivity) (by norm_num)).1 hfin
 
+/-- `S₁` (slices of `R_δ`): bound on the class size from (WF). -/
+lemma C_cls_S1 {s q L P : ℕ} (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
+    (hR : Rdelta δ s q L P) (hWF : LamLP q s L P ≤ (2:ℝ) ^ ((cc - 2 * δ) * q))
+    (hne : (C_cls s q L P).Nonempty) :
+    ((C_cls s q L P).card : ℝ) ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s - 0.0037 * δ * q) :=
+  C_cls_S1G 1.23 3.5 δ 0.0037 hq hqs hδ hδ1 (by norm_num) hR hWF hne
 
-/-- Bound per class (combining `S₁`, `S₂`, `S₃`). -/
-lemma C_cls_bound (s q L P : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
-    (hWF : WF δ s q) :
+
+/-- General form of the bound per class (combining `S₁`, `S₂`, `S₃`; `RdeltaG a b δ`). The gain of `S₃` comes from the bound `hS3` with slope `1 + κδ`
+(of the form of `C_S3_gainG`), the gain of `S₂` from `g ≤ 0.488b` (`t* > 0.488`), and the gain of `S₁` from `1.4381a + 2g₁ ≤ 2`. -/
+lemma C_cls_boundG (s q L P : ℕ) (a b δ κ g1 g : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 < δ)
+    (hδ1 : δ ≤ 1e-3) (hκδ : 0 < 1 + κ * δ) (hag : 1.4381 * a + 2 * g1 ≤ 2) (hgb : g ≤ 0.488 * b)
+    (hS3 : ∀ P Lq q : ℕ, (P : ℝ) ≤ q → a * δ * q ≤ lam * Lq - P →
+      (1 + rhoc * ((1 + κ * δ) - 1)) ^ P / (1 + κ * δ) ^ Lq ≤ (2:ℝ) ^ (-(g * δ ^ 2 * q)))
+    (hWF : WFG a b δ s q) :
     ((C_cls s q L P).card : ℝ) ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s) *
-      ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) := by
+      ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by
   classical
   rcases (C_cls s q L P).eq_empty_or_nonempty with h0 | hne
   · rw [h0, Finset.card_empty, Nat.cast_zero]; positivity
@@ -262,85 +281,97 @@ lemma C_cls_bound (s q L P : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ :
   have hq1 : (1:ℝ) ≤ 32 * ((q : ℝ) + 1) := by
     have : (0:ℝ) ≤ q := by positivity
     linarith
-  have hpos1 : (0:ℝ) ≤ (2:ℝ) ^ (-(0.0037 * δ * q)) := by positivity
-  have hpos2 : (0:ℝ) ≤ (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by positivity
+  have hpos1 : (0:ℝ) ≤ (2:ℝ) ^ (-(g1 * δ * q)) := by positivity
+  have hpos2 : (0:ℝ) ≤ (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by positivity
   -- from the conclusion in the form of `S₂`, `S₃`
-  have hfrom23 : ((C_cls s q L P).card : ℝ) ≤ (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) →
+  have hfrom23 : ((C_cls s q L P).card : ℝ) ≤ (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(g * δ ^ 2 * q)) →
       ((C_cls s q L P).card : ℝ) ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s) *
-        ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) := by
+        ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by
     intro h
     have h2 : (0:ℝ) ≤ (2:ℝ) ^ ((1 - cc) * s) := by positivity
-    calc ((C_cls s q L P).card : ℝ) ≤ (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := h
-      _ ≤ (2:ℝ) ^ ((1 - cc) * s) * ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) := by
+    calc ((C_cls s q L P).card : ℝ) ≤ (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(g * δ ^ 2 * q)) := h
+      _ ≤ (2:ℝ) ^ ((1 - cc) * s) * ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by
           apply mul_le_mul_of_nonneg_left _ h2; linarith
       _ ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s) *
-            ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) := by
+            ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by
           rw [mul_assoc (32 * ((q : ℝ) + 1))]
           exact le_mul_of_one_le_left (by positivity) hq1
   have hPT : ((C_cls s q L P).card : ℝ) ≤ ((Pset q P).card : ℝ) * (Tset q s L P).card := by
     exact_mod_cast C_cls_le_PT hq hqs
-  by_cases h3 : 1.23 * δ * q < hp q P
+  by_cases h3 : a * δ * q < hp q P
   · -- `S₃`: the height of the first part is large
     apply hfrom23
-    have hz : (0:ℝ) < 1 + 10 / 3 * δ := by positivity
     have hPq : (P : ℝ) ≤ q := by
       have := (C_Lp_real q).1
       unfold hp at hhp; linarith
-    have hgain := C_S3_gain δ hδ hδ1 P (Lp q) q hPq (by unfold hp at h3; linarith)
-    have hPc := C_P_card_tilt q P (1 + 10 / 3 * δ) hz
+    have hgain := hS3 P (Lp q) q hPq (by unfold hp at h3; linarith)
+    have hPc := C_P_card_tilt q P (1 + κ * δ) hκδ
     have hTc := C_T_card q s L P hPs.le hLLp.le
     calc ((C_cls s q L P).card : ℝ) ≤ ((Pset q P).card : ℝ) * (Tset q s L P).card := hPT
-      _ ≤ ((2:ℝ) ^ ((1 - cc) * P - tstar * hp q P) * (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) *
+      _ ≤ ((2:ℝ) ^ ((1 - cc) * P - tstar * hp q P) * (2:ℝ) ^ (-(g * δ ^ 2 * q))) *
             (2:ℝ) ^ ((1 - cc) * (s - P) - tstar * (hL s L - hp q P)) := by
           apply mul_le_mul _ hTc (by positivity) (by positivity)
           exact hPc.trans (mul_le_mul_of_nonneg_left hgain (by positivity))
-      _ = (2:ℝ) ^ ((1 - cc) * s - tstar * hL s L) * (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by
+      _ = (2:ℝ) ^ ((1 - cc) * s - tstar * hL s L) * (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by
           simp only [C_rpow_mul_rpow]
           congr 1; ring
-      _ ≤ (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by
+      _ ≤ (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by
           apply mul_le_mul_of_nonneg_right _ (by positivity)
           apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
           have : 0 ≤ tstar * hL s L := mul_nonneg (by linarith) hhL
           linarith
   · push Not at h3
-    by_cases h2 : 3.5 * δ ^ 2 * q < hL s L
+    by_cases h2 : b * δ ^ 2 * q < hL s L
     · -- `S₂`: the height of the layer is large
       apply hfrom23
       calc ((C_cls s q L P).card : ℝ) ≤ ((Pset q P).card : ℝ) * (Tset q s L P).card := hPT
         _ ≤ (2:ℝ) ^ ((1 - cc) * s - tstar * hL s L) := C_PT_card q s L P hPs.le hLLp.le
-        _ ≤ (2:ℝ) ^ ((1 - cc) * s + -(1.708 * δ ^ 2 * q)) := by
+        _ ≤ (2:ℝ) ^ ((1 - cc) * s + -(g * δ ^ 2 * q)) := by
             apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
-            have h4 : 0.488 * (3.5 * δ ^ 2 * q) ≤ tstar * hL s L :=
-              mul_le_mul ht1.le h2.le (by positivity) (by linarith)
+            have h4 : 0.488 * hL s L ≤ tstar * hL s L := mul_le_mul_of_nonneg_right ht1.le hhL
+            have h5 : g * (δ ^ 2 * q) ≤ 0.488 * b * (δ ^ 2 * q) :=
+              mul_le_mul_of_nonneg_right hgb (by positivity)
             nlinarith
-        _ = (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by rw [C_rpow_mul_rpow]
+        _ = (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by rw [C_rpow_mul_rpow]
     · -- `S₁`: slices of `R_δ`
       push Not at h2
-      have hR : Rdelta δ s q L P := ⟨hhL, h2, hhp, h3, ⟨_, hwP⟩, ⟨_, hτT⟩, hPs⟩
-      have h1 := C_cls_S1 δ hq hqs hδ hδ1 hR (hWF L P hR) ⟨n, hn⟩
+      have hR : RdeltaG a b δ s q L P := ⟨hhL, h2, hhp, h3, ⟨_, hwP⟩, ⟨_, hτT⟩, hPs⟩
+      have h1 := C_cls_S1G a b δ g1 hq hqs hδ hδ1 hag hR (hWF L P hR) ⟨n, hn⟩
       refine h1.trans ?_
-      have e : (2:ℝ) ^ ((1 - cc) * s - 0.0037 * δ * q) =
-          (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(0.0037 * δ * q)) := by
+      have e : (2:ℝ) ^ ((1 - cc) * s - g1 * δ * q) =
+          (2:ℝ) ^ ((1 - cc) * s) * (2:ℝ) ^ (-(g1 * δ * q)) := by
         rw [C_rpow_mul_rpow]; ring_nf
-      have h5 : (2:ℝ) ^ (-(0.0037 * δ * q)) ≤
-          (2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) := by linarith
+      have h5 : (2:ℝ) ^ (-(g1 * δ * q)) ≤
+          (2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by linarith
       rw [e, ← mul_assoc]
       exact mul_le_mul_of_nonneg_left h5 (by positivity)
 
-
-/-- Concrete form of Theorem A (`C₀ = 32`, `N₀ = 3`, `q₀ = 2`). The 1st and 4th terms are not used (see the remark in the text). -/
-theorem C_thmA (s q : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hs1 : 1 < (s : ℝ) / q) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
+/-- Bound per class (combining `S₁`, `S₂`, `S₃`). -/
+lemma C_cls_bound (s q L P : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hqs : q < s) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
     (hWF : WF δ s q) :
+    ((C_cls s q L P).card : ℝ) ≤ 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s) *
+      ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) :=
+  C_cls_boundG s q L P 1.23 3.5 δ (10 / 3) 0.0037 1.708 hq hqs hδ hδ1 (by positivity) (by norm_num)
+    (by norm_num) (fun P Lq q hPq hhp => C_S3_gain δ hδ hδ1 P Lq q hPq hhp) hWF
+
+
+/-- Concrete form of the general form of Theorem A (`C₀ = 32`, `N₀ = 3`, `q₀ = 2`, `WFG a b δ`):
+`#(𝒩_K ∩ [1, 2^s)) ≤ 32(s+2)³ 2^{(1−c)s}(2^{−(1−c)(s−q)/2} + 2^{−g₁δq} + 2^{−gδ²q})`. -/
+theorem C_thmAG (s q : ℕ) (a b δ κ g1 g : ℝ) (hq : 2 ≤ q) (hs1 : 1 < (s : ℝ) / q) (hδ : 0 < δ)
+    (hδ1 : δ ≤ 1e-3) (hκδ : 0 < 1 + κ * δ) (hag : 1.4381 * a + 2 * g1 ≤ 2) (hgb : g ≤ 0.488 * b)
+    (hS3 : ∀ P Lq q : ℕ, (P : ℝ) ≤ q → a * δ * q ≤ lam * Lq - P →
+      (1 + rhoc * ((1 + κ * δ) - 1)) ^ P / (1 + κ * δ) ^ Lq ≤ (2:ℝ) ^ (-(g * δ ^ 2 * q)))
+    (hWF : WFG a b δ s q) :
     (NKcount (s + q) (2 ^ s - 1) : ℝ) ≤ 32 * ((s : ℝ) + 2) ^ 3 * (2:ℝ) ^ ((1 - cc) * s) *
-      ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(0.0037 * δ * q)) +
-        (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) + (2:ℝ) ^ (-(1.727 * δ ^ 2 * q))) := by
+      ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(g1 * δ * q)) +
+        (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by
   have hq0 : (0:ℝ) < q := by
     have : (2:ℝ) ≤ q := by exact_mod_cast hq
     linarith
   have hqs : q < s := by
     have := (one_lt_div hq0).1 hs1; exact_mod_cast this
   set B : ℝ := 32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s) *
-    ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) with hB
+    ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))) with hB
   have h1 : (NKcount (s + q) (2 ^ s - 1) : ℝ) ≤
       ∑ L ∈ range (s + 1), ∑ P ∈ range (s + 1), ((C_cls s q L P).card : ℝ) := by
     exact_mod_cast C_NK_le s q
@@ -348,12 +379,11 @@ theorem C_thmA (s q : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hs1 : 1 < (s : ℝ) / q) (
       ∑ L ∈ range (s + 1), ∑ P ∈ range (s + 1), B := by
     apply Finset.sum_le_sum; intro L _
     apply Finset.sum_le_sum; intro P _
-    exact C_cls_bound s q L P δ hq hqs hδ hδ1 hWF
+    exact C_cls_boundG s q L P a b δ κ g1 g hq hqs hδ hδ1 hκδ hag hgb hS3 hWF
   have h3 : ∑ L ∈ range (s + 1), ∑ P ∈ range (s + 1), B = ((s : ℝ) + 1) ^ 2 * B := by
     simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; push_cast; ring
   refine h1.trans (h2.trans (h3.le.trans ?_))
   have hT1 : (0:ℝ) ≤ (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) := by positivity
-  have hT4 : (0:ℝ) ≤ (2:ℝ) ^ (-(1.727 * δ ^ 2 * q)) := by positivity
   have hqs' : (q : ℝ) + 1 ≤ (s : ℝ) + 2 := by
     have : (q : ℝ) < s := by exact_mod_cast hqs
     linarith
@@ -363,18 +393,29 @@ theorem C_thmA (s q : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hs1 : 1 < (s : ℝ) / q) (
     rw [e]
     apply mul_le_mul _ (by linarith) (by positivity) (by positivity)
     apply pow_le_pow_left₀ (by positivity); linarith
-  have hsum : (2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) ≤
-      (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(0.0037 * δ * q)) +
-        (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) + (2:ℝ) ^ (-(1.727 * δ ^ 2 * q)) := by linarith
+  have hsum : (2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q)) ≤
+      (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(g1 * δ * q)) +
+        (2:ℝ) ^ (-(g * δ ^ 2 * q)) := by linarith
   rw [hB]
   calc ((s : ℝ) + 1) ^ 2 * (32 * ((q : ℝ) + 1) * (2:ℝ) ^ ((1 - cc) * s) *
-        ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))))
+        ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))))
       = (((s : ℝ) + 1) ^ 2 * (32 * ((q : ℝ) + 1))) * (2:ℝ) ^ ((1 - cc) * s) *
-        ((2:ℝ) ^ (-(0.0037 * δ * q)) + (2:ℝ) ^ (-(1.708 * δ ^ 2 * q))) := by ring
+        ((2:ℝ) ^ (-(g1 * δ * q)) + (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by ring
     _ ≤ (32 * ((s : ℝ) + 2) ^ 3) * (2:ℝ) ^ ((1 - cc) * s) *
-        ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(0.0037 * δ * q)) +
-          (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) + (2:ℝ) ^ (-(1.727 * δ ^ 2 * q))) := by
+        ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(g1 * δ * q)) +
+          (2:ℝ) ^ (-(g * δ ^ 2 * q))) := by
         gcongr
+
+/-- Concrete form of Theorem A (`C₀ = 32`, `N₀ = 3`, `q₀ = 2`). The 1st and 4th terms are not used (see the remark in the text). -/
+theorem C_thmA (s q : ℕ) (δ : ℝ) (hq : 2 ≤ q) (hs1 : 1 < (s : ℝ) / q) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3)
+    (hWF : WF δ s q) :
+    (NKcount (s + q) (2 ^ s - 1) : ℝ) ≤ 32 * ((s : ℝ) + 2) ^ 3 * (2:ℝ) ^ ((1 - cc) * s) *
+      ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(0.0037 * δ * q)) +
+        (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) + (2:ℝ) ^ (-(1.727 * δ ^ 2 * q))) := by
+  have h := C_thmAG s q 1.23 3.5 δ (10 / 3) 0.0037 1.708 hq hs1 hδ hδ1 (by positivity) (by norm_num)
+    (by norm_num) (fun P Lq q hPq hhp => C_S3_gain δ hδ hδ1 P Lq q hPq hhp) hWF
+  have hT4 : (0:ℝ) ≤ (2:ℝ) ^ (-(1.727 * δ ^ 2 * q)) := by positivity
+  refine h.trans (mul_le_mul_of_nonneg_left (by linarith) (by positivity))
 
 /-- The content of `sOf_ratio`. -/
 theorem C_sOf_ratio (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (q0 : ℕ) :
@@ -436,15 +477,19 @@ lemma C_NK_mono (K X Y : ℕ) (h : X ≤ Y) : NKcount K X ≤ NKcount K Y := by
   exact ⟨⟨hn.1.1, hn.1.2.trans h⟩, hn.2⟩
 
 set_option maxHeartbeats 1000000 in
-/-- The content of Corollary A. -/
-theorem C_corA (α δ : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 < δ) (hδ' : δ ≤ 1e-3)
-    (hWF : ∃ K1 : ℕ, ∀ K ≥ K1, WF δ (sOf α K) (K - sOf α K)) (ε : ℝ)
-    (hε : ε < min (1.70 * δ ^ 2 * (1 - α)) ((1 - cc) * (2 * α - 1) / 2)) :
+/-- The content of the general form of Corollary A (`WFG a b δ`, the hypotheses of `C_thmAG`, and the final coefficient `G` with `0 ≤ G ≤ g`, `Gδ ≤ g₁`, `Gδ² ≤ 1`). -/
+theorem C_corAG (α a b δ κ g1 g G : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 < δ)
+    (hδ1 : δ ≤ 1e-3) (hκδ : 0 < 1 + κ * δ) (hag : 1.4381 * a + 2 * g1 ≤ 2) (hgb : g ≤ 0.488 * b)
+    (hS3 : ∀ P Lq q : ℕ, (P : ℝ) ≤ q → a * δ * q ≤ lam * Lq - P →
+      (1 + rhoc * ((1 + κ * δ) - 1)) ^ P / (1 + κ * δ) ^ Lq ≤ (2:ℝ) ^ (-(g * δ ^ 2 * q)))
+    (hG0 : 0 ≤ G) (hGg : G ≤ g) (hG1 : G * δ ≤ g1) (hG2 : G * δ ^ 2 ≤ 1)
+    (hWF : ∃ K1 : ℕ, ∀ K ≥ K1, WFG a b δ (sOf α K) (K - sOf α K)) (ε : ℝ)
+    (hε : ε < min (G * δ ^ 2 * (1 - α)) ((1 - cc) * (2 * α - 1) / 2)) :
     ∃ K0 : ℕ, ∀ K ≥ K0, (NKcount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ (2:ℝ) ^ ((α * (1 - cc) - ε) * K) := by
   obtain ⟨K1, hK1⟩ := hWF
   obtain ⟨K2, hK2⟩ := C_sOf_ratio α hα hα' 2
   obtain ⟨hc1, hc2⟩ := cc_bounds
-  set μ := min (1.70 * δ ^ 2 * (1 - α)) ((1 - cc) * (2 * α - 1) / 2) with hμ
+  set μ := min (G * δ ^ 2 * (1 - α)) ((1 - cc) * (2 * α - 1) / 2) with hμ
   set η := μ - ε with hη
   have hη0 : 0 < η := by rw [hη]; linarith
   set r := (2:ℝ) ^ η with hr
@@ -482,22 +527,19 @@ theorem C_corA (α δ : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 <
     omega
   have hmono : (NKcount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ NKcount (s + q) (2 ^ s - 1) := by
     rw [hsK]; exact_mod_cast C_NK_mono K _ _ hfl
-  have hA := C_thmA s q δ hq2 hr1' hδ hδ' (hK1 K hK1')
+  have hA := C_thmAG s q a b δ κ g1 g hq2 hr1' hδ hδ1 hκδ hag hgb hS3 (hK1 K hK1')
   refine hmono.trans (hA.trans ?_)
   -- bound on the right-hand side
   have h1c : 0 < 1 - cc := by linarith
-  have hμ1 : μ ≤ 1.70 * δ ^ 2 * (1 - α) := min_le_left _ _
+  have hμ1 : μ ≤ G * δ ^ 2 * (1 - α) := min_le_left _ _
   have hμ2 : μ ≤ (1 - cc) * (2 * α - 1) / 2 := min_le_right _ _
   have hq0 : (0:ℝ) ≤ q := by positivity
-  have hδ2 : 1.70 * δ ^ 2 ≤ 1 := by
-    have : δ ^ 2 ≤ (1e-3) ^ 2 := pow_le_pow_left₀ hδ.le hδ' 2
-    norm_num at this ⊢; linarith
   have hqlow : (1 - α) * K - 1 ≤ (q : ℝ) := by rw [hqr]; linarith
-  have hkey : μ * K - 1 ≤ 1.70 * δ ^ 2 * q := by
-    have h1 : μ * K ≤ 1.70 * δ ^ 2 * (1 - α) * K := mul_le_mul_of_nonneg_right hμ1 (by linarith)
-    have h2 : 1.70 * δ ^ 2 * ((1 - α) * K - 1) ≤ 1.70 * δ ^ 2 * q :=
+  have hkey : μ * K - 1 ≤ G * δ ^ 2 * q := by
+    have h1 : μ * K ≤ G * δ ^ 2 * (1 - α) * K := mul_le_mul_of_nonneg_right hμ1 (by linarith)
+    have h2 : G * δ ^ 2 * ((1 - α) * K - 1) ≤ G * δ ^ 2 * q :=
       mul_le_mul_of_nonneg_left hqlow (by positivity)
-    have e : 1.70 * δ ^ 2 * ((1 - α) * K - 1) = 1.70 * δ ^ 2 * (1 - α) * K - 1.70 * δ ^ 2 := by ring
+    have e : G * δ ^ 2 * ((1 - α) * K - 1) = G * δ ^ 2 * (1 - α) * K - G * δ ^ 2 := by ring
     linarith
   have hT1 : (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) ≤ 2 * (2:ℝ) ^ (-(μ * K)) := by
     have : (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) ≤ (2:ℝ) ^ (-(μ * K)) := by
@@ -511,29 +553,25 @@ theorem C_corA (α δ : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 <
       rw [e2]; linarith
     have : (0:ℝ) ≤ (2:ℝ) ^ (-(μ * K)) := by positivity
     linarith
-  have hTgen : ∀ x : ℝ, 1.70 * δ ^ 2 * q ≤ x → (2:ℝ) ^ (-x) ≤ 2 * (2:ℝ) ^ (-(μ * K)) := by
+  have hTgen : ∀ x : ℝ, G * δ ^ 2 * q ≤ x → (2:ℝ) ^ (-x) ≤ 2 * (2:ℝ) ^ (-(μ * K)) := by
     intro x hx
     calc (2:ℝ) ^ (-x) ≤ (2:ℝ) ^ (1 + -(μ * K)) := by
           apply Real.rpow_le_rpow_of_exponent_le (by norm_num); linarith
       _ = 2 * (2:ℝ) ^ (-(μ * K)) := by rw [Real.rpow_add (by norm_num), Real.rpow_one]
   have hdq : 0 ≤ δ ^ 2 * q := by positivity
-  have hT2 := hTgen (0.0037 * δ * q) (by
-    have h1 : 1.70 * δ ≤ 0.0037 := by linarith
-    have h2 : 1.70 * δ * (δ * q) ≤ 0.0037 * (δ * q) :=
-      mul_le_mul_of_nonneg_right h1 (by positivity)
-    have e1 : 1.70 * δ ^ 2 * q = 1.70 * δ * (δ * q) := by ring
-    have e2 : 0.0037 * δ * q = 0.0037 * (δ * q) := by ring
+  have hT2 := hTgen (g1 * δ * q) (by
+    have h2 : G * δ * (δ * q) ≤ g1 * (δ * q) :=
+      mul_le_mul_of_nonneg_right hG1 (by positivity)
+    have e1 : G * δ ^ 2 * q = G * δ * (δ * q) := by ring
+    have e2 : g1 * δ * q = g1 * (δ * q) := by ring
     rw [e1, e2]; exact h2)
-  have hT3 := hTgen (1.708 * δ ^ 2 * q) (by
-    have e1 : 1.70 * δ ^ 2 * q = 1.70 * (δ ^ 2 * q) := by ring
-    have e2 : 1.708 * δ ^ 2 * q = 1.708 * (δ ^ 2 * q) := by ring
-    rw [e1, e2]; linarith)
-  have hT4 := hTgen (1.727 * δ ^ 2 * q) (by
-    have e1 : 1.70 * δ ^ 2 * q = 1.70 * (δ ^ 2 * q) := by ring
-    have e2 : 1.727 * δ ^ 2 * q = 1.727 * (δ ^ 2 * q) := by ring
-    rw [e1, e2]; linarith)
-  have hsum : (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(0.0037 * δ * q)) +
-      (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) + (2:ℝ) ^ (-(1.727 * δ ^ 2 * q)) ≤ 8 * (2:ℝ) ^ (-(μ * K)) := by
+  have hT3 := hTgen (g * δ ^ 2 * q) (by
+    have e1 : G * δ ^ 2 * q = G * (δ ^ 2 * q) := by ring
+    have e2 : g * δ ^ 2 * q = g * (δ ^ 2 * q) := by ring
+    rw [e1, e2]; exact mul_le_mul_of_nonneg_right hGg hdq)
+  have hμK : (0:ℝ) ≤ (2:ℝ) ^ (-(μ * K)) := by positivity
+  have hsum : (2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(g1 * δ * q)) +
+      (2:ℝ) ^ (-(g * δ ^ 2 * q)) ≤ 8 * (2:ℝ) ^ (-(μ * K)) := by
     linarith
   have hpow : (2:ℝ) ^ ((1 - cc) * s) ≤ 2 * (2:ℝ) ^ (α * (1 - cc) * K) := by
     calc (2:ℝ) ^ ((1 - cc) * s) ≤ (2:ℝ) ^ (1 + α * (1 - cc) * K) := by
@@ -556,8 +594,8 @@ theorem C_corA (α δ : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 <
   have hrpow : r ^ K = (2:ℝ) ^ (η * K) := by
     rw [hr, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]
   calc 32 * ((s : ℝ) + 2) ^ 3 * (2:ℝ) ^ ((1 - cc) * s) *
-        ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(0.0037 * δ * q)) +
-          (2:ℝ) ^ (-(1.708 * δ ^ 2 * q)) + (2:ℝ) ^ (-(1.727 * δ ^ 2 * q)))
+        ((2:ℝ) ^ (-((1 - cc) * (s - q) / 2)) + (2:ℝ) ^ (-(g1 * δ * q)) +
+          (2:ℝ) ^ (-(g * δ ^ 2 * q)))
       ≤ 32 * (64 * (K : ℝ) ^ 3) * (2 * (2:ℝ) ^ (α * (1 - cc) * K)) * (8 * (2:ℝ) ^ (-(μ * K))) := by
         gcongr
     _ = (32768 * (K : ℝ) ^ 3) * ((2:ℝ) ^ (α * (1 - cc) * K) * (2:ℝ) ^ (-(μ * K))) := by ring
@@ -567,6 +605,16 @@ theorem C_corA (α δ : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 <
         rw [hrpow]
         simp only [C_rpow_mul_rpow]
         congr 1; rw [hη]; ring
+
+
+/-- The content of Corollary A. -/
+theorem C_corA (α δ : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) (hδ : 0 < δ) (hδ' : δ ≤ 1e-3)
+    (hWF : ∃ K1 : ℕ, ∀ K ≥ K1, WF δ (sOf α K) (K - sOf α K)) (ε : ℝ)
+    (hε : ε < min (1.70 * δ ^ 2 * (1 - α)) ((1 - cc) * (2 * α - 1) / 2)) :
+    ∃ K0 : ℕ, ∀ K ≥ K0, (NKcount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ (2:ℝ) ^ ((α * (1 - cc) - ε) * K) :=
+  C_corAG α 1.23 3.5 δ (10 / 3) 0.0037 1.708 1.70 hα hα' hδ hδ' (by positivity) (by norm_num) (by norm_num)
+    (fun P Lq q hPq hhp => C_S3_gain δ hδ hδ' P Lq q hPq hhp) (by norm_num) (by norm_num)
+    (by linarith) (by nlinarith) hWF ε hε
 
 
 /-- Theorem A: if (WF)(δ) holds at `(s, q)`, then `#(𝒩_K ∩ [1, 2^s))` is at most

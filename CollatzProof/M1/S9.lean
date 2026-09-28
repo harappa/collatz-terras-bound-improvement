@@ -437,21 +437,29 @@ theorem G_lamLp (q : ℕ) : lam * Lp q ≤ q ∧ (q : ℝ) < lam * (Lp q + 1) :=
     have := (Real.rpow_lt_rpow_left_iff (by norm_num)).mp this
     push_cast at this; exact this
 
-/-- For a slice in `R_δ`: `P < q` and `t = s − P ≤ q + 1` (`s ≤ 1.94q`, `δ ≤ 10^{−3}`). -/
-theorem G_t_bounds (δ : ℝ) (s q L P : ℕ) (hδ1 : δ ≤ 1e-3) (hδ : 0 < δ) (hs : (s : ℝ) ≤ 1.94 * q)
-    (hR : Rdelta δ s q L P) : P < q ∧ s - P ≤ q + 1 := by
+/-- For a slice in `RdeltaG a b δ`: `P < q` and `t = s − P ≤ q + 1` (`s ≤ 1.94q`, `aδ ≤ 1.23×10^{−3}`). -/
+theorem G_t_boundsG (a b δ : ℝ) (s q L P : ℕ) (haδ : a * δ ≤ 1.23e-3) (hs : (s : ℝ) ≤ 1.94 * q)
+    (hR : RdeltaG a b δ s q L P) : P < q ∧ s - P ≤ q + 1 := by
   obtain ⟨-, -, hp0, hp1, -, -, hPs⟩ := hR
   obtain ⟨hl1, hl2⟩ := G_lamLp q
   have hlam2 := G_lam_lt_two
-  unfold hp at hp0 hp1
+  have hq0 : (0 : ℝ) ≤ q := by positivity
+  have hp1' : hp q P ≤ 1.23e-3 * q := hp1.trans (mul_le_mul_of_nonneg_right haδ hq0)
+  unfold hp at hp0 hp1'
   have hPq : (P : ℝ) < q := by linarith
   constructor
   · exact_mod_cast hPq
-  · have hq0 : (0 : ℝ) ≤ q := by positivity
-    have h : (s : ℝ) - P < q + 2 := by nlinarith
+  · have h : (s : ℝ) - P < q + 2 := by nlinarith
     have : ((s - P : ℕ) : ℝ) < q + 2 := by rw [Nat.cast_sub hPs.le]; exact h
     have : s - P < q + 2 := by exact_mod_cast this
     omega
+
+-- The hypothesis `hδ` is not needed once the proof goes through the general form `G_t_boundsG` (the statement of the skeleton is kept).
+set_option linter.unusedVariables false in
+/-- For a slice in `R_δ`: `P < q` and `t = s − P ≤ q + 1` (`s ≤ 1.94q`, `δ ≤ 10^{−3}`). -/
+theorem G_t_bounds (δ : ℝ) (s q L P : ℕ) (hδ1 : δ ≤ 1e-3) (hδ : 0 < δ) (hs : (s : ℝ) ≤ 1.94 * q)
+    (hR : Rdelta δ s q L P) : P < q ∧ s - P ≤ q + 1 :=
+  G_t_boundsG 1.23 3.5 δ s q L P (by linarith) hs hR
 
 /-- `s² Θ_*^Y = 2^{−δ'q−1}`. -/
 theorem G_first_term (δ' Θs : ℝ) (hΘ0 : 0 < Θs) (hΘ1 : Θs < 1) (s q : ℕ) (hs : 1 ≤ s) :
@@ -476,14 +484,14 @@ theorem G_first_term (δ' Θs : ℝ) (hΘ0 : 0 < Θs) (hΘ1 : Θs < 1) (s q : �
 theorem G_Theta_half_nonneg (ρ : ℝ) : 0 ≤ Theta (1 / 2) ρ := by
   unfold Theta; nlinarith [sq_nonneg (ρ - 1 / 2)]
 
-/-- Proposition 9.2 (outer shells): if `0 < Θ_* < 1` satisfies `Θ_{1/2}(ρ̄) ≤ Θ_*` for every slice in `R_δ`
-and `⌊(s − q − 1)/2⌋ ≥ Y`, then for `q` sufficiently large, `A_k ≤ 2^{−δ'q}` for every slice in `R_δ` and every shell `k₁ ≤ k ≤ L`. -/
-theorem outer_shells (δ δ' Θs : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ' : 0 < δ') (hΘ0 : 0 < Θs)
+/-- General form of Proposition 9.2 (`RdeltaG a b δ`, `aδ ≤ 1.23×10^{−3}`): if `0 < Θ_* < 1` satisfies `Θ_{1/2}(ρ̄) ≤ Θ_*` for every slice and
+`⌊(s − q − 1)/2⌋ ≥ Y`, then, for `q` sufficiently large, `A_k ≤ 2^{−δ'q}` for every slice and every shell `k₁ ≤ k ≤ L`. -/
+theorem outer_shellsG (a b δ δ' Θs : ℝ) (haδ : a * δ ≤ 1.23e-3) (hδ' : 0 < δ') (hΘ0 : 0 < Θs)
     (hΘ1 : Θs < 1) :
     ∃ q0 : ℕ, ∀ s q : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 →
-      (∀ L P, Rdelta δ s q L P → Theta (1 / 2) (rhoBar q s L P) ≤ Θs) →
+      (∀ L P, RdeltaG a b δ s q L P → Theta (1 / 2) (rhoBar q s L P) ≤ Θs) →
       Yout δ' Θs s q ≤ ((s - q - 1) / 2 : ℕ) →
-      ∀ L P, Rdelta δ s q L P → ∀ k : ℕ, k1out δ' Θs s q ≤ k → k ≤ L →
+      ∀ L P, RdeltaG a b δ s q L P → ∀ k : ℕ, k1out δ' Θs s q ≤ k → k ≤ L →
         Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q)) := by
   refine ⟨1, ?_⟩
   intro s q hq hs1 hs2 hΘ hY L P hR k hk1 hkL
@@ -494,7 +502,7 @@ theorem outer_shells (δ δ' Θs : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ
     have : (1 : ℝ) ≤ s := by linarith [show (1 : ℝ) ≤ q by exact_mod_cast hq]
     exact_mod_cast this
   obtain ⟨hL0, -, -, -, -, hne, hPs⟩ := id hR
-  obtain ⟨hPq, htq⟩ := G_t_bounds δ s q L P hδ1 hδ hs194 hR
+  obtain ⟨hPq, htq⟩ := G_t_boundsG a b δ s q L P haδ hs194 hR
   have hLp := (Lp_spec q).2
   -- `Y > 0`
   have hlog : 0 < Real.logb 2 (1 / Θs) :=
@@ -589,5 +597,18 @@ theorem outer_shells (δ δ' Θs : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ
   have htot : (2 : ℝ) ^ (-(δ' * q) - 1) + 2 ^ (-(δ' * q) - 1) = 2 ^ (-(δ' * q)) := by
     rw [Real.rpow_sub (by norm_num), Real.rpow_one]; ring
   linarith
+
+-- The hypothesis `hδ` is not needed once the proof goes through the general form `outer_shellsG` (the statement of the skeleton is kept).
+set_option linter.unusedVariables false in
+/-- Proposition 9.2 (outer shells): if `0 < Θ_* < 1` satisfies `Θ_{1/2}(ρ̄) ≤ Θ_*` for every slice in `R_δ`
+and `⌊(s − q − 1)/2⌋ ≥ Y`, then for `q` sufficiently large, `A_k ≤ 2^{−δ'q}` for every slice in `R_δ` and every shell `k₁ ≤ k ≤ L`. -/
+theorem outer_shells (δ δ' Θs : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1e-3) (hδ' : 0 < δ') (hΘ0 : 0 < Θs)
+    (hΘ1 : Θs < 1) :
+    ∃ q0 : ℕ, ∀ s q : ℕ, q0 ≤ q → 1 < (s : ℝ) / q → (s : ℝ) / q ≤ 1.94 →
+      (∀ L P, Rdelta δ s q L P → Theta (1 / 2) (rhoBar q s L P) ≤ Θs) →
+      Yout δ' Θs s q ≤ ((s - q - 1) / 2 : ℕ) →
+      ∀ L P, Rdelta δ s q L P → ∀ k : ℕ, k1out δ' Θs s q ≤ k → k ≤ L →
+        Ak q s L P k ≤ (2:ℝ) ^ (-(δ' * q)) :=
+  outer_shellsG 1.23 3.5 δ δ' Θs (by linarith) hδ' hΘ0 hΘ1
 
 end Collatz.M1

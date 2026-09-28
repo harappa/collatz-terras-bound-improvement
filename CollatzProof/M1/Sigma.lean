@@ -289,12 +289,12 @@ theorem sigma_le_NK (hR : RhinHyp) :
   have hc' : (SigmaCount K X : ℝ) ≤ (NKcount K X : ℝ) + (⌊B⌋₊ : ℝ) := by exact_mod_cast hcount
   linarith
 
-/-- **Theorem 14.4 (stopping-time version, qualitative form)**: for every `α ∈ (1/2, 0.659]` there is `ε > 0` such that,
-for all sufficiently large `K`, `#{n ≤ 2^{αK} : σ(n) > K} ≤ 2^{(α(1−c) − ε)K}`. -/
-theorem sigma_main (hBug : BugeaudHyp) (hR : RhinHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+/-- Theorem 14.4 (stopping-time version, qualitative form), with the supply of the lattice condition as an argument. -/
+theorem sigma_mainG (hH : ∀ cD : ℝ, 0 < cD → cD ≤ 9e-4 → HgtSupply cD) (hR : RhinHyp) (α : ℝ)
+    (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
     ∃ ε > 0, ∃ K0 : ℕ, ∀ K ≥ K0,
       (SigmaCount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ (2:ℝ) ^ ((α * (1 - cc) - ε) * K) := by
-  obtain ⟨ε, hε, K1, hK1⟩ := m1_main hBug α hα hα'
+  obtain ⟨ε, hε, K1, hK1⟩ := m1_mainG hH α hα hα'
   obtain ⟨C, κ, hC, hκ, hS⟩ := sigma_le_NK hR
   obtain ⟨-, hcc⟩ := cc_bounds
   set a := α * (1 - cc) with ha
@@ -321,12 +321,18 @@ theorem sigma_main (hBug : BugeaudHyp) (hR : RhinHyp) (α : ℝ) (hα : 1 / 2 < 
     ring
   linarith
 
-/-- **Corollary 14.5 (integers with infinite stopping time, qualitative form)**: there is `ε > 0` such that, for all sufficiently large `x`,
-`#{n ≤ x : σ(n) = ∞} ≤ x^{1 − c − ε}`. -/
-theorem divergent_count (hBug : BugeaudHyp) (hR : RhinHyp) :
+/-- **Theorem 14.4 (stopping-time version, qualitative form)**: for every `α ∈ (1/2, 0.659]` there is `ε > 0` such that,
+for all sufficiently large `K`, `#{n ≤ 2^{αK} : σ(n) > K} ≤ 2^{(α(1−c) − ε)K}`. -/
+theorem sigma_main (hBug : BugeaudHyp) (hR : RhinHyp) (α : ℝ) (hα : 1 / 2 < α) (hα' : α ≤ 0.659) :
+    ∃ ε > 0, ∃ K0 : ℕ, ∀ K ≥ K0,
+      (SigmaCount K ⌊(2:ℝ) ^ (α * K)⌋₊ : ℝ) ≤ (2:ℝ) ^ ((α * (1 - cc) - ε) * K) :=
+  sigma_mainG (fun cD h0 h1 => hgt hBug cD h0 h1) hR α hα hα'
+
+/-- Corollary 14.5 (qualitative form), with the supply of the lattice condition as an argument. -/
+theorem divergent_countG (hH : ∀ cD : ℝ, 0 < cD → cD ≤ 9e-4 → HgtSupply cD) (hR : RhinHyp) :
     ∃ ε > 0, ∃ x0 : ℕ, ∀ x ≥ x0, (DivCount x : ℝ) ≤ (x : ℝ) ^ (1 - cc - ε) := by
   classical
-  obtain ⟨ε, hε, K0, hK0⟩ := sigma_main hBug hR 0.6 (by norm_num) (by norm_num)
+  obtain ⟨ε, hε, K0, hK0⟩ := sigma_mainG hH hR 0.6 (by norm_num) (by norm_num)
   set α : ℝ := 0.6 with hα
   have hα0 : 0 < α := by norm_num
   set e : ℝ := α * (1 - cc) - ε with he
@@ -391,5 +397,11 @@ theorem divergent_count (hBug : BugeaudHyp) (hR : RhinHyp) :
     _ ≤ x ^ (e / α) * (2:ℝ) ^ |e| := h2
     _ ≤ x ^ (e / α) * x ^ (ε / (2 * α)) := mul_le_mul_of_nonneg_left h3 hxe
     _ = (x:ℝ) ^ (1 - cc - ε / (2 * α)) := h4
+
+/-- **Corollary 14.5 (integers with infinite stopping time, qualitative form)**: there is `ε > 0` such that, for all sufficiently large `x`,
+`#{n ≤ x : σ(n) = ∞} ≤ x^{1 − c − ε}`. -/
+theorem divergent_count (hBug : BugeaudHyp) (hR : RhinHyp) :
+    ∃ ε > 0, ∃ x0 : ℕ, ∀ x ≥ x0, (DivCount x : ℝ) ≤ (x : ℝ) ^ (1 - cc - ε) :=
+  divergent_countG (fun cD h0 h1 => hgt hBug cD h0 h1) hR
 
 end Collatz.M1

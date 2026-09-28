@@ -1,5 +1,0 @@
-# lake env leanchecker --fresh CollatzND.M1Sigma, run in a fresh copy of this bundle (Lean v4.30.0-rc2).
-# leanchecker prints nothing on success; the lines below are the start time, the exit code and the end time.
-2026-09-26T14:43:33+09:00
-exit=0
-2026-09-26T15:17:01+09:00

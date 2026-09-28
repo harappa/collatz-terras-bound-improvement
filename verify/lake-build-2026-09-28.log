@@ -1,0 +1,280 @@
+# M1 Lean bundle, revision r7: python3 fetch_mazur.py, lake exe cache get and lake build, run in a fresh copy of
+# this bundle (Lean v4.30.0-rc2, Mathlib v4.30.0-rc2). The absolute path of the working copy is replaced by <copy>.
+start 2026-09-28T21:26:25+09:00
+$ python3 fetch_mazur.py
+verified: ZIP and 604 files -> <copy>/vendor/mazur
+exit=0
+$ lake exe cache get
+info: mathlib: cloning https://github.com/leanprover-community/mathlib4
+info: mathlib: checking out revision '5450b53e5ddc75d46418fabb605edbf36bd0beb6'
+info: plausible: cloning https://github.com/leanprover-community/plausible
+info: plausible: checking out revision '86210d4ad1b08b086d0bd638637a75246523dbb8'
+info: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient
+info: LeanSearchClient: checking out revision 'c5d5b8fe6e5158def25cd28eb94e4141ad97c843'
+info: importGraph: cloning https://github.com/leanprover-community/import-graph
+info: importGraph: checking out revision 'cdab3938ccabbdb044be6896e251b5814bec932e'
+info: proofwidgets: cloning https://github.com/leanprover-community/ProofWidgets4
+info: proofwidgets: checking out revision '2db6054a44326f8c0230ee0570e2ddb894816511'
+info: aesop: cloning https://github.com/leanprover-community/aesop
+info: aesop: checking out revision 'f0c6e183ea26531e82773feb4b73ab6595ca17a5'
+info: Qq: cloning https://github.com/leanprover-community/quote4
+info: Qq: checking out revision '1cc7e819b9b9bc1e87c9edcccb62e0269e00a809'
+info: batteries: cloning https://github.com/leanprover-community/batteries
+info: batteries: checking out revision '5c57f3857ba81924a88b2cdf4f062e34ec04ff11'
+info: Cli: cloning https://github.com/leanprover/lean4-cli
+info: Cli: checking out revision '13567aed1ac4f12aea9484178e07e51f8c9f7658'
+✔ [2/22] Built Cache.Init (350ms)
+✔ [3/22] Built Cache.Lean (437ms)
+✔ [4/22] Built Cache.Init:c.o (97ms)
+✔ [5/22] Built Cache.Lean:c.o (152ms)
+✔ [8/22] Built Cache.IO (1.4s)
+✔ [9/22] Built Batteries.Data.String.Basic (441ms)
+✔ [10/22] Built Batteries.Data.String.Basic:c.o (119ms)
+✔ [11/22] Built Batteries.Data.Array.Match (894ms)
+✔ [12/22] Built Cache.Hashing (889ms)
+✔ [13/22] Built Batteries.Data.Array.Match:c.o (225ms)
+✔ [14/22] Built Batteries.Data.String.Matcher (433ms)
+✔ [15/22] Built Cache.Hashing:c.o (396ms)
+✔ [16/22] Built Cache.IO:c.o (1.3s)
+✔ [17/22] Built Batteries.Data.String.Matcher:c.o (188ms)
+✔ [18/22] Built Cache.Requests (2.2s)
+✔ [19/22] Built Cache.Main (967ms)
+✔ [20/22] Built Cache.Main:c.o (597ms)
+✔ [21/22] Built Cache.Requests:c.o (2.0s)
+✔ [22/22] Built cache:exe (797ms)
+Current branch: HEAD
+Using cache (Azure) from origin: (some leanprover-community/mathlib4)
+No files to download
+Decompressing 8294 file(s) (3 already decompressed)
+Decompressed in 16296 ms
+Completed successfully!
+exit=0
+build-start 2026-09-28T21:28:35+09:00
+$ lake build
+✔ [8313/8413] Built FormalConjectures.Util.ProblemImports (1.7s)
+✔ [8314/8413] Built Erdos1135.NumberTheory.Rhin.RangeLCM (1.9s)
+✔ [8315/8413] Built Erdos1135.NumberTheory.Rhin.Statement (2.7s)
+✔ [8316/8413] Built Erdos1135.NumberTheory.Rhin.LiteralPolynomial (2.8s)
+✔ [8317/8413] Built Erdos1135.Terras.Density.NaturalDensity (3.2s)
+⚠ [8318/8413] Built FormalConjectures.Wikipedia.CollatzConjecture (1.7s)
+warning: vendor/mazur/FormalConjectures/Wikipedia/CollatzConjecture.lean:54:8: declaration uses `sorry`
+✔ [8319/8413] Built Erdos1135.NumberTheory.Rhin.RemainderCore (3.5s)
+✔ [8320/8413] Built Erdos1135.Tao.Probability.Finite (3.8s)
+✔ [8321/8413] Built Erdos1135.NumberTheory.Rhin.Irrationality (3.1s)
+⚠ [8322/8413] Built CollatzProof.Core.Defs (5.5s)
+warning: CollatzProof/Core/Defs.lean:20:22: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+✔ [8323/8413] Built CollatzProof.M1.Compat (5.6s)
+⚠ [8324/8413] Built Erdos1135.NumberTheory.Rhin.LcmGrowth (4.1s)
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:176:35: This simp argument is unused:
+  a
+
+Hint: Omit it from the simp argument list.
+  simp only [sylvesterMultinomial, a̵,̵ ̵b, c, d]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:176:38: This simp argument is unused:
+  b
+
+Hint: Omit it from the simp argument list.
+  simp only [sylvesterMultinomial, a, b̵,̵ ̵c, d]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:176:41: This simp argument is unused:
+  c
+
+Hint: Omit it from the simp argument list.
+  simp only [sylvesterMultinomial, a, b, c̵,̵ ̵d]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:176:44: This simp argument is unused:
+  d
+
+Hint: Omit it from the simp argument list.
+  simp only [sylvesterMultinomial, a, b, c,̵ ̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:272:26: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:547:4: exponent 903 exceeds the threshold 256, exponentiation operation was not evaluated, use `set_option exponentiation.threshold <num>` to set a new threshold
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LcmGrowth.lean:669:4: exponent 1805 exceeds the threshold 256, exponentiation operation was not evaluated, use `set_option exponentiation.threshold <num>` to set a new threshold
+✔ [8325/8413] Built Erdos1135.Basic (3.1s)
+✔ [8326/8413] Built Erdos1135.Tao.Density.LogDensity (3.2s)
+⚠ [8327/8413] Built Erdos1135.NumberTheory.Rhin.LiteralSupport (3.7s)
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LiteralSupport.lean:273:28: This simp argument is unused:
+  Int.natAbs_pow
+
+Hint: Omit it from the simp argument list.
+  simp [Int.natAbs_mul,̵ ̵I̵n̵t̵.̵n̵a̵t̵A̵b̵s̵_̵p̵o̵w̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✔ [8328/8413] Built CollatzProof.M1.D_Orbit (6.1s)
+⚠ [8329/8413] Built Erdos1135.NumberTheory.Rhin.LiteralRemainder (3.9s)
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LiteralRemainder.lean:42:4: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LiteralRemainder.lean:42:4: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [8330/8413] Built Erdos1135.Tao.Probability.LogWindow (2.8s)
+✔ [8331/8413] Built Erdos1135.CollatzStep (3.1s)
+✔ [8332/8413] Built Erdos1135.Tao.Statement (3.2s)
+✔ [8333/8413] Built Erdos1135.NumberTheory.Rhin.LiteralCoefficientBound (4.0s)
+✔ [8334/8413] Built CollatzProof.Defs (5.7s)
+✔ [8335/8413] Built Erdos1135.Tao.Probability.LogWindowPMF (3.3s)
+✔ [8336/8413] Built Erdos1135.Tao.ColMin (3.0s)
+✔ [8337/8413] Built Erdos1135.Parity (4.1s)
+✔ [8338/8413] Built Erdos1135.Tao.Probability.LogWindowSourceIndex (3.6s)
+✔ [8339/8413] Built Erdos1135.Division (3.1s)
+✔ [8340/8413] Built CollatzProof.Fiber (7.0s)
+✔ [8341/8413] Built Erdos1135.Tao.Probability.LogWindowEndpoints (3.9s)
+✔ [8342/8413] Built Erdos1135.Terras.Core.Defs (3.6s)
+✔ [8343/8413] Built Erdos1135.Tao.Probability.LogWindowMassLower (4.5s)
+✔ [8344/8413] Built Erdos1135.Tao.Syracuse.Defs (3.1s)
+✔ [8345/8413] Built Erdos1135.Tao.Section5.Schedule (3.6s)
+✔ [8346/8413] Built CollatzProof.M1.Defs (5.5s)
+✔ [8347/8413] Built Erdos1135.Tao.Syracuse.Statement (2.0s)
+✔ [8348/8413] Built Erdos1135.Tao.Syracuse.FirstPassage (3.3s)
+✔ [8349/8413] Built Erdos1135.NumberTheory.Rhin.RemainderCells (20s)
+✔ [8350/8413] Built Erdos1135.Tao.Syracuse.RealFirstPassage (2.0s)
+✔ [8351/8413] Built CollatzProof.M1.Fourier (5.2s)
+✔ [8352/8413] Built CollatzProof.M1.E_Binom (6.3s)
+✔ [8353/8413] Built Erdos1135.ND.Conventions (3.2s)
+✔ [8354/8413] Built Erdos1135.NumberTheory.Rhin.ContinuousRemainder (6.4s)
+✔ [8355/8413] Built CollatzProof.M1.E_Model (9.9s)
+✔ [8356/8413] Built CollatzProof.M1.ShellDefs (5.1s)
+✔ [8357/8413] Built Erdos1135.ND.Statement (3.0s)
+✔ [8358/8413] Built CollatzProof.M1.G_Riesz (7.6s)
+✔ [8359/8413] Built Erdos1135.ND.PhaseGap (3.1s)
+✔ [8360/8413] Built CollatzProof.M1.I_Kernel (9.4s)
+✔ [8361/8413] Built CollatzProof.M1.DeepDefs (5.0s)
+✔ [8362/8413] Built CollatzProof.M1.BugeaudBridge (6.3s)
+⚠ [8363/8413] Built Erdos1135.NumberTheory.Rhin.LargeHeight (13s)
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:237:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:237:47: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:263:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:263:47: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:307:24: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:307:24: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:323:20: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:329:24: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:329:24: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:335:24: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:335:24: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:483:27: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:483:50: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: vendor/mazur/Erdos1135/NumberTheory/Rhin/LargeHeight.lean:486:27: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+✔ [8364/8413] Built CollatzProof.M1.Basics (7.6s)
+✔ [8365/8413] Built CollatzProof.M1.I_Four (7.7s)
+✔ [8366/8413] Built Erdos1135.NumberTheory.Rhin.FiniteAbsorption (3.6s)
+✔ [8367/8413] Built Erdos1135.NumberTheory.Rhin.LiteralLargeHeight (3.8s)
+✔ [8368/8413] Built CollatzProof.M1.I_Mult (13s)
+✔ [8369/8413] Built CollatzProof.M1.I_Phys (6.2s)
+✔ [8370/8413] Built Erdos1135.ND.RhinPhaseGap (3.1s)
+✔ [8371/8413] Built CollatzProof.M1.Thm1Defs (7.8s)
+✔ [8372/8413] Built CollatzND.Rhin (3.0s)
+✔ [8373/8413] Built CollatzProof.M1.Counting (14s)
+✔ [8374/8413] Built CollatzProof.M1.C_Words (5.9s)
+⚠ [8375/8413] Built CollatzProof.M1.S7 (6.8s)
+warning: CollatzProof/M1/S7.lean:239:60: unused variable `hδ'0`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: CollatzProof/M1/S7.lean:239:76: unused variable `hδ'c`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [8376/8413] Built CollatzProof.M1.D_Word (7.2s)
+warning: CollatzProof/M1/D_Word.lean:323:4: 'push_cast' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [8377/8413] Built CollatzProof.M1.D_Fourier (8.1s)
+✔ [8378/8413] Built CollatzProof.M1.I_BC (8.2s)
+✔ [8379/8413] Built CollatzProof.M1.C_Fourier (5.9s)
+✔ [8380/8413] Built CollatzProof.M1.C_Count (6.1s)
+✔ [8381/8413] Built CollatzProof.M1.I_Corr (6.6s)
+✔ [8382/8413] Built CollatzProof.M1.Phase (15s)
+✔ [8383/8413] Built CollatzProof.M1.S6 (17s)
+✔ [8384/8413] Built CollatzProof.M1.C_Bilin (7.9s)
+✔ [8385/8413] Built CollatzProof.M1.C_Slice (7.9s)
+✔ [8386/8413] Built CollatzProof.M1.D_Slice (11s)
+⚠ [8387/8413] Built CollatzProof.M1.S11 (8.6s)
+warning: CollatzProof/M1/S11.lean:145:61: unused variable `hD`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [8388/8413] Built CollatzProof.M1.S10 (9.2s)
+warning: CollatzProof/M1/S10.lean:894:5: unused variable `hD`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: CollatzProof/M1/S10.lean:894:31: unused variable `hk`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: CollatzProof/M1/S10.lean:936:53: unused variable `hδ`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: CollatzProof/M1/S10.lean:936:66: unused variable `hδ1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: CollatzProof/M1/S10.lean:937:5: unused variable `hsq1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [8389/8413] Built CollatzProof.M1.D_CRT (5.9s)
+✔ [8390/8413] Built CollatzProof.M1.D_Main (7.6s)
+✔ [8391/8413] Built CollatzProof.M1.S9 (21s)
+✔ [8392/8413] Built CollatzProof.M1.S5 (8.7s)
+✔ [8393/8413] Built CollatzProof.M1.S13 (46s)
+✔ [8394/8413] Built CollatzProof.M1.C_Anal (37s)
+✔ [8395/8413] Built CollatzProof.M1.K_Anal (10s)
+✔ [8396/8413] Built CollatzProof.M1.Thm1Anal (8.3s)
+✔ [8397/8413] Built CollatzProof.M1.K_Terms (13s)
+✔ [8398/8413] Built CollatzProof.M1.ExplicitNum (14s)
+✔ [8399/8413] Built CollatzProof.M1.S4 (23s)
+✔ [8400/8413] Built CollatzProof.M1.ExplicitNumV3 (13s)
+✔ [8401/8413] Built CollatzProof.M1.ThmAV3 (9.9s)
+✔ [8402/8413] Built CollatzProof.M1.S13B (68s)
+✔ [8403/8413] Built CollatzProof.M1.S14 (73s)
+⚠ [8404/8413] Built CollatzProof.M1.Sigma (16s)
+warning: CollatzProof/M1/Sigma.lean:276:14: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: CollatzProof/M1/Sigma.lean:276:4: 'all_goals omega' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [8405/8413] Built CollatzND.M1Sigma (4.8s)
+✔ [8406/8413] Built CollatzProof.M1.Spec (11s)
+✔ [8407/8413] Built CollatzProof.M1.ExplicitCore (69s)
+✔ [8408/8413] Built CollatzProof.M1.Explicit (8.3s)
+✔ [8409/8413] Built CollatzND.M1Explicit (4.8s)
+✔ [8410/8413] Built CollatzProof.M1.ExplicitV3 (7.7s)
+✔ [8412/8413] Built CollatzND.M1ExplicitV3 (4.7s)
+Build completed successfully (8413 jobs).
+exit=0
+end 2026-09-28T21:33:42+09:00

@@ -122,9 +122,15 @@ noncomputable def slicePos {n : ℕ} (q : ℕ) (u : Fin n → Bool) : ℕ := by
   classical
   exact Nat.find (⟨n, Or.inl le_rfl⟩ : ∃ P, P ≥ n ∨ Lp q < ones u (P + 1))
 
-/-- `R_δ` (Definition 1.10): the pairs `(L, P)` with `0 ≤ h_L ≤ 3.5δ²q`, `0 < h_p ≤ 1.23δq`, `𝒫_P ≠ ∅`, `𝒯_{L,P} ≠ ∅`. -/
-def Rdelta (δ : ℝ) (s q : ℕ) (L P : ℕ) : Prop :=
-  0 ≤ hL s L ∧ hL s L ≤ 3.5 * δ ^ 2 * q ∧ 0 < hp q P ∧ hp q P ≤ 1.23 * δ * q ∧
+/-- `R_δ` with the constants as parameters: the pairs `(L, P)` with `0 ≤ h_L ≤ bδ²q`, `0 < h_p ≤ aδq`, `𝒫_P ≠ ∅`, `𝒯_{L,P} ≠ ∅`.
+Definition 1.10 of version 2 of the proof manuscript has `(a, b) = (1.23, 3.5)` (`Rdelta`); Definition 1.10 of version 3 (§4.2.1 of that manuscript) has
+`(a, b) = (1.38, 4.48)` (Definition 3.12 of the paper, revision r7). -/
+def RdeltaG (a b δ : ℝ) (s q : ℕ) (L P : ℕ) : Prop :=
+  0 ≤ hL s L ∧ hL s L ≤ b * δ ^ 2 * q ∧ 0 < hp q P ∧ hp q P ≤ a * δ * q ∧
     (Pset q P).Nonempty ∧ (Tset q s L P).Nonempty ∧ P < s
+
+/-- `R_δ` (Definition 1.10 of version 2; revision r6 of the paper): the pairs `(L, P)` with `0 ≤ h_L ≤ 3.5δ²q`, `0 < h_p ≤ 1.23δq`, `𝒫_P ≠ ∅`, `𝒯_{L,P} ≠ ∅`
+(`RdeltaG` with `(a, b) = (1.23, 3.5)`). -/
+def Rdelta (δ : ℝ) (s q : ℕ) (L P : ℕ) : Prop := RdeltaG 1.23 3.5 δ s q L P
 
 end Collatz.M1
